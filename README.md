@@ -1,5 +1,8 @@
-# EcoSync 🌱
+<div align="center">
+  <img src="frontend/public/logo.jpg" alt="EcoSync Logo" width="200" />
+</div>
 
+# EcoSync 🌱
 EcoSync is a modern, AI-powered community resource-sharing platform. It connects people locally to borrow, lend, rent, and donate underutilized items like books, tools, electronics, and sports equipment.
 
 ## Features

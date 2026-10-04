@@ -43,10 +43,8 @@ export default function Navbar() {
           
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center pr-4">
-            <Link to="/" className="flex items-center gap-1.5">
-              <div className="w-8 h-8 bg-teal-600 text-white rounded-md flex items-center justify-center font-bold text-lg">
-                E
-              </div>
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/logo.jpg" alt="EcoSync Logo" className="w-9 h-9 rounded-md object-cover" />
               <span className="font-bold text-xl tracking-tight text-gray-900">EcoSync</span>
             </Link>
           </div>
