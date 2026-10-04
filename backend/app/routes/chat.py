@@ -14,19 +14,57 @@ chat_bp = Blueprint('chat', __name__)
 def get_conversations():
     current_user_id = int(get_jwt_identity())
     
-    # Get all conversations where user is participant1 or participant2
-    conversations = Conversation.query.filter(
+    from sqlalchemy.orm import joinedload
+    
+    # Eager load listing
+    conversations = Conversation.query.options(joinedload(Conversation.listing)).filter(
         or_(Conversation.participant1_id == current_user_id,
             Conversation.participant2_id == current_user_id)
     ).order_by(Conversation.updated_at.desc()).all()
     
+    if not conversations:
+        return jsonify({"success": True, "conversations": []}), 200
+        
+    conv_ids = [c.id for c in conversations]
+    
+    # Batch load users
+    user_ids = set()
+    for c in conversations:
+        user_ids.add(c.participant1_id)
+        user_ids.add(c.participant2_id)
+    users = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()}
+    
+    # Batch load unread counts
+    unread_counts_raw = db.session.query(
+        Message.conversation_id, db.func.count(Message.id)
+    ).filter(
+        Message.conversation_id.in_(conv_ids),
+        Message.is_read == False,
+        Message.sender_id != current_user_id
+    ).group_by(Message.conversation_id).all()
+    unread_counts = {c_id: count for c_id, count in unread_counts_raw}
+    
+    # Batch load latest messages
+    latest_msg_subq = db.session.query(
+        Message.conversation_id, db.func.max(Message.created_at).label('max_date')
+    ).filter(Message.conversation_id.in_(conv_ids)).group_by(Message.conversation_id).subquery()
+    
+    latest_msgs = db.session.query(Message).join(
+        latest_msg_subq,
+        and_(
+            Message.conversation_id == latest_msg_subq.c.conversation_id,
+            Message.created_at == latest_msg_subq.c.max_date
+        )
+    ).all()
+    latest_msg_map = {m.conversation_id: m for m in latest_msgs}
+    
     result = []
     for conv in conversations:
         other_user_id = conv.participant2_id if conv.participant1_id == current_user_id else conv.participant1_id
-        other_user = User.query.get(other_user_id)
+        other_user = users.get(other_user_id)
         
-        # Get latest message
-        latest_msg = Message.query.filter_by(conversation_id=conv.id).order_by(Message.created_at.desc()).first()
+        latest_msg = latest_msg_map.get(conv.id)
+        unread = unread_counts.get(conv.id, 0)
         
         result.append({
             "id": conv.id,
@@ -37,7 +75,7 @@ def get_conversations():
             "other_user_name": other_user.username if other_user else "Unknown User",
             "updated_at": conv.updated_at.isoformat(),
             "latest_message": latest_msg.message_text if latest_msg else "No messages yet",
-            "unread_count": Message.query.filter_by(conversation_id=conv.id, sender_id=other_user_id, is_read=False).count()
+            "unread_count": unread
         })
         
     return jsonify({"success": True, "conversations": result}), 200
@@ -90,7 +128,9 @@ def get_messages(conversation_id):
     other_user_id = conv.participant2_id if conv.participant1_id == current_user_id else conv.participant1_id
     other_user = User.query.get(other_user_id)
         
-    messages = Message.query.filter_by(conversation_id=conversation_id).order_by(Message.created_at.asc()).all()
+    # Limit to last 200 messages for performance
+    messages = Message.query.filter_by(conversation_id=conversation_id).order_by(Message.created_at.desc()).limit(200).all()
+    messages.reverse() # return in ascending order
     
     # Mark as read
     unread_msgs = [m for m in messages if m.sender_id != current_user_id and not m.is_read]

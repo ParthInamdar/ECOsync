@@ -23,10 +23,14 @@ recommendations_bp = Blueprint('recommendations', __name__)
 def get_recommendations():
     current_user_id = int(get_jwt_identity())
     
+    user_lat = request.args.get('lat', type=float)
+    user_lon = request.args.get('lon', type=float)
+    
     # Check cache first
+    cache_key = f"{current_user_id}_{round(user_lat, 2) if user_lat else 'none'}_{round(user_lon, 2) if user_lon else 'none'}"
     current_time = time.time()
-    if current_user_id in RECOMMENDATIONS_CACHE:
-        cached_data = RECOMMENDATIONS_CACHE[current_user_id]
+    if cache_key in RECOMMENDATIONS_CACHE:
+        cached_data = RECOMMENDATIONS_CACHE[cache_key]
         if current_time - cached_data['timestamp'] < CACHE_TTL:
             return jsonify(cached_data['data']), 200
     
@@ -37,9 +41,7 @@ def get_recommendations():
         
     client = Groq(api_key=api_key)
     
-    user_lat = request.args.get('lat', type=float)
-    user_lon = request.args.get('lon', type=float)
-    
+
     # 2. Gather User Context (Past requests)
     past_requests = Request.query.filter_by(requester_id=current_user_id).limit(10).all()
     user_context = [req.resource.title for req in past_requests]
@@ -121,12 +123,12 @@ def get_recommendations():
         
         # Make sure it's a list
         if not isinstance(recommended_ids, list):
-            recommended_ids = []
+            recommended_ids = [r.id for r in available[:4]]
             
     except Exception as e:
         print(f"Groq API Error: {e}")
-        return jsonify({"success": False, "message": "AI Recommendation failed."}), 500
-        
+        # Fallback: Just return recent available resources
+        recommended_ids = [r.id for r in available[:4]]
     # 6. Fetch full resource details for recommended IDs
     recommended_resources = Resource.query.options(joinedload(Resource.category))\
         .filter(Resource.id.in_(recommended_ids)).all()
@@ -151,7 +153,7 @@ def get_recommendations():
         "ai_reasoning": "Based on your past activity and local availability."
     }
     
-    RECOMMENDATIONS_CACHE[current_user_id] = {
+    RECOMMENDATIONS_CACHE[cache_key] = {
         "timestamp": current_time,
         "data": response_data
     }

@@ -6,6 +6,7 @@ from app.models.review import Review
 from app.models.transaction import Transaction
 from app.models.report import Report
 from app.models.block import Block
+from app.models.saved_resource import SavedResource
 from sqlalchemy.orm import joinedload
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, jwt_required
 
@@ -120,3 +121,62 @@ def block_user(user_id):
     db.session.commit()
     
     return jsonify({"success": True, "message": "User blocked successfully."}), 201
+
+@users_bp.route('/saved', methods=['GET'])
+@jwt_required()
+def get_saved_resources():
+    current_user_id = int(get_jwt_identity())
+    saved = SavedResource.query.filter_by(user_id=current_user_id).all()
+    
+    resource_ids = [s.resource_id for s in saved]
+    if not resource_ids:
+        return jsonify({"success": True, "saved_resources": []}), 200
+        
+    resources = Resource.query.options(joinedload(Resource.category))\
+        .filter(Resource.id.in_(resource_ids)).all()
+        
+    resources_data = []
+    for r in resources:
+        resources_data.append({
+            "id": r.id,
+            "title": r.title,
+            "category": r.category.name if r.category else "Other",
+            "sharing_type": r.sharing_type,
+            "listing_type": r.listing_type,
+            "price": r.price,
+            "location_name": r.location_name,
+            "image_url": r.image_url or "https://placehold.co/400x400/e2e8f0/64748b?text=No+Image",
+            "is_available": r.is_available,
+            "created_at": r.created_at.isoformat()
+        })
+        
+    return jsonify({"success": True, "saved_resources": resources_data}), 200
+
+@users_bp.route('/saved/<int:resource_id>', methods=['POST'])
+@jwt_required()
+def toggle_save_resource(resource_id):
+    current_user_id = int(get_jwt_identity())
+    
+    # Check if resource exists
+    resource = Resource.query.get_or_404(resource_id)
+    
+    existing = SavedResource.query.filter_by(user_id=current_user_id, resource_id=resource_id).first()
+    
+    if existing:
+        # Unsave
+        db.session.delete(existing)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Resource removed from saved list", "is_saved": False}), 200
+    else:
+        # Save
+        new_save = SavedResource(user_id=current_user_id, resource_id=resource_id)
+        db.session.add(new_save)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Resource saved successfully", "is_saved": True}), 201
+
+@users_bp.route('/saved/<int:resource_id>/check', methods=['GET'])
+@jwt_required()
+def check_saved_status(resource_id):
+    current_user_id = int(get_jwt_identity())
+    existing = SavedResource.query.filter_by(user_id=current_user_id, resource_id=resource_id).first()
+    return jsonify({"success": True, "is_saved": bool(existing)}), 200

@@ -46,8 +46,16 @@ def mark_read():
     
     return jsonify({"success": True, "message": "Notifications marked as read"}), 200
 
+from app.models.user import User
+
 @notifications_bp.route('/trigger-reminders', methods=['POST'])
+@jwt_required()
 def trigger_reminders():
+    current_user_id = int(get_jwt_identity())
+    user = User.query.get(current_user_id)
+    if not user or user.role != 'ADMIN':
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+        
     # In production, this would be a celery task or cron job
     # Finds active transactions where expected_return_date is soon or passed
     active_transactions = Transaction.query.filter(

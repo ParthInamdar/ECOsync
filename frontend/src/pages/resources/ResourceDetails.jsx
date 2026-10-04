@@ -22,6 +22,8 @@ export default function ResourceDetails() {
   const [resource, setResource] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   
   // Request Modal State
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -56,7 +58,17 @@ export default function ResourceDetails() {
         }
       })
       .catch(err => console.error("Failed to load availability", err));
-  }, [id]);
+      
+    if (user && id) {
+      api.get(`/users/saved/${id}/check`)
+        .then(res => {
+          if(res.data.success) {
+            setIsSaved(res.data.is_saved);
+          }
+        })
+        .catch(err => console.error("Failed to check saved status", err));
+    }
+  }, [id, user]);
 
   const handleChatStart = async () => {
     if (!user) {
@@ -124,6 +136,24 @@ export default function ResourceDetails() {
     } catch (err) {
       setRequestStatus('error');
       setRequestError(err.response?.data?.message || "Failed to send request.");
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      alert("Please login first to save items!");
+      return;
+    }
+    setSaveLoading(true);
+    try {
+      const res = await api.post(`/users/saved/${resource.id}`);
+      if (res.data.success) {
+        setIsSaved(res.data.is_saved);
+      }
+    } catch (err) {
+      alert("Failed to save resource");
+    } finally {
+      setSaveLoading(false);
     }
   };
 
@@ -275,8 +305,12 @@ export default function ResourceDetails() {
                 </button>
               )}
               
-              <button className="w-full bg-white text-teal-700 border-2 border-teal-600 rounded py-2.5 font-bold hover:bg-teal-50 transition-colors">
-                Save for later
+              <button 
+                onClick={handleSave}
+                disabled={saveLoading}
+                className="w-full bg-white text-teal-700 border-2 border-teal-600 rounded py-2.5 font-bold hover:bg-teal-50 transition-colors"
+              >
+                {saveLoading ? 'Updating...' : isSaved ? 'Saved (Click to unsave)' : 'Save for later'}
               </button>
             </div>
 

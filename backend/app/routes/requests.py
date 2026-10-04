@@ -27,6 +27,9 @@ def create_request():
     if end_date_str:
         end_date = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
     
+    if start_date and end_date and start_date >= end_date:
+        return jsonify({"success": False, "message": "End date must be after start date"}), 400
+        
     if not resource_id:
         return jsonify({"success": False, "message": "Resource ID is required"}), 400
         
@@ -152,6 +155,9 @@ def update_request_status(request_id):
     
     # If accepted, create a transaction and mark resource as unavailable
     if new_status == 'ACCEPTED':
+        if not req.resource.is_available:
+            return jsonify({"success": False, "message": "Resource is no longer available"}), 409
+            
         transaction = Transaction(
             request_id=req.id,
             lender_id=req.resource.owner_id,

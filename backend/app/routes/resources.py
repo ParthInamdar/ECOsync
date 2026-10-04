@@ -6,6 +6,7 @@ from app.models.category import Category
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.transaction import Transaction
 from app.models.request import Request
+from flask_jwt_extended import verify_jwt_in_request
 from app.utils.geo import haversine
 
 resources_bp = Blueprint('resources', __name__)
@@ -112,6 +113,25 @@ def get_resource(resource_id):
         joinedload(Resource.owner)
     ).filter_by(id=resource_id).first_or_404()
     
+    current_user_id = None
+    try:
+        verify_jwt_in_request(optional=True)
+        identity = get_jwt_identity()
+        if identity:
+            current_user_id = int(identity)
+    except Exception:
+        pass
+        
+    # Location Privacy: Only show exact location to the owner
+    is_owner = (current_user_id == r.owner_id)
+    safe_lat = r.location_lat
+    safe_lon = r.location_lon
+    
+    if not is_owner and safe_lat is not None and safe_lon is not None:
+        # Approximate to ~1.1km by rounding to 2 decimal places
+        safe_lat = round(safe_lat, 2)
+        safe_lon = round(safe_lon, 2)
+    
     return jsonify({
         "success": True,
         "resource": {
@@ -129,8 +149,8 @@ def get_resource(resource_id):
             "ai_condition_assessment": r.ai_condition_assessment,
             "is_available": r.is_available,
             "location_name": r.location_name,
-            "location_lat": r.location_lat,
-            "location_lon": r.location_lon,
+            "location_lat": safe_lat,
+            "location_lon": safe_lon,
             "image_url": r.image_url or "https://placehold.co/400x400/e2e8f0/64748b?text=No+Image",
             "images": [img.image_url for img in r.images],
             "owner_id": r.owner_id,
@@ -180,6 +200,36 @@ def create_resource():
     
     if not data or not data.get('title') or not data.get('category_id'):
         return jsonify({"success": False, "message": "Missing required fields"}), 400
+        
+    price = float(data.get('price') or 0.0)
+    deposit = float(data.get('security_deposit') or 0.0)
+    lat = data.get('location_lat')
+    lon = data.get('location_lon')
+    listing_type = data.get('listing_type', 'FREE')
+    
+    if price < 0:
+        return jsonify({"success": False, "message": "Price cannot be negative"}), 422
+    if deposit < 0:
+        return jsonify({"success": False, "message": "Security deposit cannot be negative"}), 422
+        
+    if lat is not None:
+        try:
+            lat = float(lat)
+            if lat < -90 or lat > 90:
+                return jsonify({"success": False, "message": "Invalid latitude"}), 422
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid latitude format"}), 422
+            
+    if lon is not None:
+        try:
+            lon = float(lon)
+            if lon < -180 or lon > 180:
+                return jsonify({"success": False, "message": "Invalid longitude"}), 422
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid longitude format"}), 422
+            
+    if listing_type not in ['SELL', 'RENT', 'BORROW', 'DONATE', 'FREE']:
+        return jsonify({"success": False, "message": "Invalid listing type"}), 422
         
     from app.models.resource_image import ResourceImage
     

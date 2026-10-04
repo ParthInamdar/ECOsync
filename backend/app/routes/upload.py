@@ -24,6 +24,11 @@ def upload_image():
         return jsonify({"success": False, "message": "No selected file"}), 400
         
     if file and allowed_file(file.filename):
+        file.seek(0, os.SEEK_END)
+        size = file.tell()
+        if size > 5 * 1024 * 1024:
+            return jsonify({"success": False, "message": "File too large. Maximum size is 5MB."}), 413
+        file.seek(0)
         # Create unique filename to prevent overwrites
         filename = secure_filename(file.filename)
         ext = filename.rsplit('.', 1)[1].lower()
