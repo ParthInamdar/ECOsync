@@ -42,9 +42,9 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-[72px]">
           
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center pr-4">
+          <div className="flex-shrink-0 flex items-center pr-4 py-1">
             <Link to="/" className="flex items-center">
-              <img src="/logo.jpg" alt="EcoSync Logo" className="h-10 w-auto rounded-md object-contain" />
+              <img src="/logo.jpg" alt="EcoSync Logo" className="h-14 w-auto rounded-md object-contain" />
             </Link>
           </div>
           

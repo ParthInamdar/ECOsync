@@ -98,7 +98,7 @@ def send_reset_code():
     sender_password = os.environ.get('MAIL_PASSWORD')
     
     if not sender_email or not sender_password:
-        print(f"--- MOCK EMAIL --- To: {email} | Code: {code}")
+        print(f"--- MOCK EMAIL --- To: {email} | Code: {code}", flush=True)
         return jsonify({"success": True, "message": "Verification code generated. (Check server console since email isn't configured)"}), 200
         
     try:
