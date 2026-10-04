@@ -48,134 +48,84 @@ export default function Navbar() {
             </Link>
           </div>
           
-          {/* Search Bar & Category (Desktop) */}
-          <div className="hidden md:flex flex-1 max-w-2xl">
+          {/* Search Bars */}
+          <div className="hidden md:flex flex-1 max-w-4xl mx-4 gap-4 items-center">
+            {/* Location Selector */}
+            <div className="relative flex w-1/4 max-w-[250px] border-2 border-gray-800 rounded flex-shrink-0 bg-white">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-500" />
+              </div>
+              <input 
+                type="text" 
+                placeholder="India" 
+                defaultValue="India"
+                className="w-full bg-transparent py-2.5 pl-10 pr-10 text-sm text-gray-900 outline-none"
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+
+            {/* Main Search */}
             <form 
               onSubmit={(e) => {
                 e.preventDefault();
                 const fd = new FormData(e.target);
                 const query = fd.get('q');
-                const category = fd.get('category');
-                let url = '/search?';
-                if (query) url += `q=${encodeURIComponent(query)}&`;
-                if (category && category !== 'All Categories') url += `category=${encodeURIComponent(category)}`;
-                window.location.href = url;
+                if (query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
               }}
-              className="flex w-full border-2 border-gray-300 rounded focus-within:border-teal-600 bg-white overflow-hidden transition-colors"
+              className="flex w-full border-2 border-gray-800 rounded bg-white overflow-hidden"
             >
-              <select name="category" className="bg-transparent py-2 pl-3 pr-2 text-sm text-gray-700 border-none outline-none cursor-pointer w-[140px] border-r border-gray-300">
-                <option>All Categories</option>
-                <option>Books</option>
-                <option>Electronics</option>
-                <option>Sports</option>
-                <option>Tools</option>
-                <option>Household</option>
-                <option>Vehicles</option>
-                <option>Fashion</option>
-              </select>
-              
               <input 
                 name="q"
                 type="text" 
-                placeholder="Find cars, mobile phones and more..." 
-                className="w-full bg-transparent py-2 px-3 text-sm text-gray-900 border-none outline-none"
+                placeholder='Search "Properties"' 
+                className="w-full bg-transparent py-2.5 px-4 text-sm text-gray-900 outline-none"
               />
-              
-              <button type="submit" className="bg-teal-600 px-4 hover:bg-teal-700 transition-colors flex items-center justify-center">
+              <button type="submit" className="bg-[#002f34] px-5 hover:bg-gray-900 transition-colors flex items-center justify-center">
                 <Search className="w-5 h-5 text-white" />
               </button>
             </form>
           </div>
 
-          {/* Location & User Actions */}
-          <div className="flex items-center gap-6 pl-6">
+          {/* User Actions */}
+          <div className="flex items-center gap-4 flex-shrink-0 pl-2">
             
-            <div className="hidden lg:flex items-center gap-1.5 cursor-pointer group">
-              <MapPin className="w-5 h-5 text-gray-600 group-hover:text-teal-600" />
-              <span className="text-sm font-medium text-gray-700 group-hover:text-teal-600">Ahmedabad</span>
-            </div>
-
             {user ? (
-              <div className="flex items-center gap-3">
-                <Link to="/messages" onClick={() => setUnreadChatCount(0)} className="relative flex items-center gap-1 text-gray-500 hover:text-teal-600">
-                  <MessageSquare className="w-5 h-5" />
-                  {unreadChatCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                      {unreadChatCount}
-                    </span>
-                  )}
+              <div className="flex items-center gap-4">
+                <Link to="/messages" className="text-gray-900 hover:text-gray-600 font-bold text-sm">
+                  <MessageSquare className="w-6 h-6 inline-block" />
                 </Link>
-                <div className="relative">
-                  <button onClick={handleToggleNotifications} className="relative flex items-center gap-1 text-gray-500 hover:text-teal-600 focus:outline-none">
-                    <Bell className="w-5 h-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Notifications Dropdown */}
-                  {showNotifications && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
-                      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-900">Notifications</h3>
-                      </div>
-                      <div className="max-h-[400px] overflow-y-auto">
-                        {notifications.length === 0 ? (
-                          <div className="p-4 text-center text-gray-500 text-sm">No notifications yet</div>
-                        ) : (
-                          notifications.map((notif) => (
-                            <div key={notif.id} className={`p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${!notif.is_read ? 'bg-teal-50/30' : ''}`}>
-                              <p className="text-sm text-gray-800 font-medium mb-1">{notif.message}</p>
-                              <p className="text-xs text-gray-500">{new Date(notif.created_at).toLocaleString()}</p>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      <div className="bg-gray-50 p-2 text-center border-t border-gray-200">
-                        <Link to="/requests" onClick={() => setShowNotifications(false)} className="text-sm font-semibold text-teal-600 hover:underline">
-                          View all activity
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <Link to="/impact" className="flex items-center gap-1 text-sm font-bold text-green-600 hover:text-green-700">
-                  <span className="hidden sm:inline">My Impact 🌍</span>
-                </Link>
-                {user.role === 'ADMIN' && (
-                  <>
-                    <div className="h-5 w-px bg-gray-300 mx-1"></div>
-                    <Link to="/admin" className="flex items-center gap-1 text-sm font-bold text-red-600 hover:text-red-700">
-                      <span className="hidden sm:inline">Admin</span>
-                    </Link>
-                  </>
-                )}
-                <div className="h-5 w-px bg-gray-300 mx-1"></div>
-                <Link to={`/profile/${user.id}`} className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-teal-600">
-                  <UserCircle className="w-6 h-6 text-gray-500" />
-                  <span className="hidden sm:inline">{user.username}</span>
+                <button className="text-gray-900 hover:text-gray-600 font-bold text-sm">
+                  <Bell className="w-6 h-6 inline-block" />
+                </button>
+                <Link to={`/profile/${user.id}`} className="flex items-center gap-2 text-sm font-bold text-gray-900 hover:underline">
+                  <UserCircle className="w-8 h-8 text-gray-700" />
                 </Link>
                 <button 
                   onClick={logout}
-                  className="text-sm font-medium text-gray-500 hover:text-gray-900 underline underline-offset-2 ml-2"
+                  className="text-sm font-bold text-gray-900 hover:underline"
                 >
                   Logout
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="text-sm font-semibold text-gray-800 hover:underline underline-offset-2">
+              <Link to="/login" className="text-base font-bold text-gray-900 hover:underline underline-offset-4 decoration-2">
                 Login
               </Link>
             )}
             
+            {/* SELL Button styled like OLX */}
             <Link 
               to="/add" 
-              className="inline-flex items-center justify-center rounded bg-teal-600 px-4 py-2 text-sm font-bold text-white hover:bg-teal-700 transition-colors shadow-sm gap-1.5"
+              className="relative ml-2 inline-flex items-center justify-center rounded-full bg-white px-5 py-1.5 text-sm font-bold text-gray-900 transition-transform hover:scale-105"
+              style={{
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1), inset 0 0 0 5px white, 0 0 0 4px transparent, -2px -2px 0 2px #3a77ff, 2px -2px 0 2px #23e5db, 2px 2px 0 2px #ffce32, -2px 2px 0 2px #ff7733',
+                border: '1px solid transparent'
+              }}
             >
-              <Plus className="w-4 h-4" />
-              SHARE
+              <Plus className="w-5 h-5 mr-1 text-black font-bold" strokeWidth={3} />
+              SELL
             </Link>
           </div>
 
