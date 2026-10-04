@@ -4,11 +4,37 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../../utils/api';
 
 export default function ResetPassword() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors }, watch } = useForm();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  
+  const email = watch('email');
+
+  const handleSendCode = async () => {
+    if (!email) {
+      setError('Please enter your email first');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const res = await api.post('/auth/send-reset-code', { email });
+      if (res.data.success) {
+        setSuccess(res.data.message);
+        setCodeSent(true);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send verification code');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -17,7 +43,7 @@ export default function ResetPassword() {
     try {
       const res = await api.post('/auth/reset-password', {
         email: data.email,
-        phone: data.phone,
+        code: data.code,
         new_password: data.newPassword
       });
       
@@ -67,59 +93,75 @@ export default function ResetPassword() {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
-              <div className="mt-1">
+              <div className="mt-1 flex gap-2">
                 <input
                   id="email"
                   type="email"
+                  disabled={codeSent}
                   {...register('email', { required: 'Email is required' })}
-                  className="block w-full appearance-none rounded border border-gray-300 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 sm:text-sm"
+                  className="block w-full appearance-none rounded border border-gray-300 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 sm:text-sm disabled:bg-gray-100"
                 />
-                {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
+                {!codeSent && (
+                  <button
+                    type="button"
+                    onClick={handleSendCode}
+                    disabled={loading}
+                    className="inline-flex items-center justify-center rounded border border-transparent bg-teal-100 px-4 py-2 text-sm font-medium text-teal-700 hover:bg-teal-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50 whitespace-nowrap"
+                  >
+                    Send Code
+                  </button>
+                )}
               </div>
+              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
             </div>
 
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Registered Phone Number
-              </label>
-              <div className="mt-1">
-                <input
-                  id="phone"
-                  type="tel"
-                  {...register('phone', { required: 'Phone number is required' })}
-                  className="block w-full appearance-none rounded border border-gray-300 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 sm:text-sm"
-                />
-                {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>}
-              </div>
-            </div>
+            {codeSent && (
+              <>
+                <div>
+                  <label htmlFor="code" className="block text-sm font-medium text-gray-700">
+                    Verification Code
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      id="code"
+                      type="text"
+                      placeholder="6-digit code"
+                      {...register('code', { required: 'Verification code is required' })}
+                      className="block w-full appearance-none rounded border border-gray-300 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 sm:text-sm"
+                    />
+                    {errors.code && <p className="mt-1 text-xs text-red-500">{errors.code.message}</p>}
+                  </div>
+                </div>
 
-            <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
-                New Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="newPassword"
-                  type="password"
-                  {...register('newPassword', { 
-                    required: 'New password is required',
-                    minLength: { value: 6, message: 'Must be at least 6 characters' }
-                  })}
-                  className="block w-full appearance-none rounded border border-gray-300 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 sm:text-sm"
-                />
-                {errors.newPassword && <p className="mt-1 text-xs text-red-500">{errors.newPassword.message}</p>}
-              </div>
-            </div>
+                <div>
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                    New Password
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      id="newPassword"
+                      type="password"
+                      {...register('newPassword', { 
+                        required: 'New password is required',
+                        minLength: { value: 6, message: 'Must be at least 6 characters' }
+                      })}
+                      className="block w-full appearance-none rounded border border-gray-300 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 sm:text-sm"
+                    />
+                    {errors.newPassword && <p className="mt-1 text-xs text-red-500">{errors.newPassword.message}</p>}
+                  </div>
+                </div>
 
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex w-full justify-center rounded border border-transparent bg-teal-600 py-2 px-4 text-sm font-bold text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-70 transition-colors"
-              >
-                {loading ? 'Resetting...' : 'Reset Password'}
-              </button>
-            </div>
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex w-full justify-center rounded border border-transparent bg-teal-600 py-2 px-4 text-sm font-bold text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-70 transition-colors"
+                  >
+                    {loading ? 'Resetting...' : 'Verify & Reset Password'}
+                  </button>
+                </div>
+              </>
+            )}
           </form>
         </div>
       </div>
