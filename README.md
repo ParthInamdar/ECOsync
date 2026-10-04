@@ -18,7 +18,14 @@ EcoSync is a modern, AI-powered community resource-sharing platform. It connects
 
 ## 🚀 Quick Start Guide
 
-### 1. Backend Setup (Flask API)
+### 1. Clone the Repository
+Start by cloning the project to your local machine:
+```bash
+git clone https://github.com/ParthInamdar/ECOsync.git
+cd ECOsync
+```
+
+### 2. Backend Setup (Flask API)
 The backend is powered by Python and Flask.
 
 ```bash
@@ -48,7 +55,7 @@ python init_db.py
 python run.py
 ```
 
-### 2. Frontend Setup (React/Vite)
+### 3. Frontend Setup (React/Vite)
 The frontend uses React and is built with Vite.
 
 ```bash
@@ -62,5 +69,5 @@ npm install
 npm run dev
 ```
 
-### 3. Open the App
+### 4. Open the App
 Visit [http://localhost:5173](http://localhost:5173) in your browser. You can create a new account or log in as an existing user to explore EcoSync!
