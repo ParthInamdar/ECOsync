@@ -66,6 +66,27 @@ def login():
         }
     }), 200
 
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    
+    email = data.get('email')
+    phone = data.get('phone')
+    new_password = data.get('new_password')
+    
+    if not email or not phone or not new_password:
+        return jsonify({"success": False, "message": "Email, phone, and new password are required"}), 400
+        
+    user = User.query.filter_by(email=email, phone=phone).first()
+    
+    if not user:
+        return jsonify({"success": False, "message": "No account found matching this email and phone combination"}), 404
+        
+    user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+    
+    return jsonify({"success": True, "message": "Password reset successfully. You can now login."}), 200
+
 @auth_bp.route('/me', methods=['GET'])
 @jwt_required()
 def get_current_user():

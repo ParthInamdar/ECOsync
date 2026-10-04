@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ResetPassword from './pages/auth/ResetPassword';
 import Home from './pages/Home';
 import SearchPage from './pages/resources/Search';
 import AddResource from './pages/resources/AddResource';
@@ -37,6 +38,7 @@ function App() {
               <Route path="/search" element={<SearchPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               
               <Route path="/add" element={
                 <ProtectedRoute>
