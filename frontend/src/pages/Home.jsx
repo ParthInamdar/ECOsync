@@ -133,7 +133,7 @@ export default function Home() {
         ) : resources.length === 0 ? (
           <div className="py-12 text-center text-gray-500 bg-white rounded border border-gray-200 mb-8">
             <p className="mb-2">No resources available right now.</p>
-            <Link to="/add" className="text-teal-600 hover:underline font-medium">Be the first to list an item!</Link>
+            <Link to="/add" className="text-teal-600 hover:underline font-medium">Be the first to share a resource!</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">

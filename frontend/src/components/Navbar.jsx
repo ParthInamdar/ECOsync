@@ -141,7 +141,7 @@ export default function Navbar() {
                     
                     <div className="p-5 border-b border-gray-100 mt-1">
                       <h3 className="font-bold text-[15px] text-gray-800 mb-0.5">Welcome</h3>
-                      <p className="text-[13px] text-gray-500 mb-4">To access account and manage listings</p>
+                      <p className="text-[13px] text-gray-500 mb-4">To access account and manage resources</p>
                       {user ? (
                         <button onClick={logout} className="w-full py-2.5 text-sm font-bold text-[#ff3f6c] border border-gray-200 hover:border-[#ff3f6c] transition-colors rounded">
                           LOGOUT
@@ -154,7 +154,7 @@ export default function Navbar() {
                     </div>
                     <div className="py-2">
                       <Link to={user ? `/profile/${user.id}` : "/login"} className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Profile</Link>
-                      <Link to="/add" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Listings</Link>
+                      <Link to="/add" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Resources</Link>
                       <Link to="/" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Saved Items</Link>
                       <Link to="/" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Contact Us</Link>
                     </div>
@@ -172,7 +172,7 @@ export default function Navbar() {
               }}
             >
               <Plus className="w-5 h-5 mr-1 text-black font-bold" strokeWidth={3} />
-              RENT/SELL
+              SHARE RESOURCE
             </Link>
           </div>
 
