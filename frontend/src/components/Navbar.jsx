@@ -128,11 +128,37 @@ export default function Navbar() {
                     <span className="text-[11px] font-bold mt-1">Messages</span>
                     {unreadChatCount > 0 && <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{unreadChatCount}</span>}
                   </Link>
-                  <button onClick={handleToggleNotifications} className="flex flex-col items-center justify-center text-gray-800 hover:text-black transition-colors relative">
-                    <Bell className="w-5 h-5" />
-                    <span className="text-[11px] font-bold mt-1">Alerts</span>
-                    {unreadCount > 0 && <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>}
-                  </button>
+                  <div className="relative">
+                    <button onClick={handleToggleNotifications} className="flex flex-col items-center justify-center text-gray-800 hover:text-black transition-colors relative pb-4 -mb-4">
+                      <Bell className="w-5 h-5" />
+                      <span className="text-[11px] font-bold mt-1">Alerts</span>
+                      {unreadCount > 0 && <span className="absolute top-0 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>}
+                    </button>
+
+                    {showNotifications && (
+                      <div className="absolute top-[60px] right-1/2 translate-x-1/2 w-80 bg-white shadow-2xl rounded-sm border border-gray-100 z-50">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-teal-600"></div>
+                        <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                          <h3 className="font-bold text-gray-800">Notifications</h3>
+                          {unreadCount === 0 && <span className="text-xs text-gray-500">All caught up</span>}
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto">
+                          {notifications.length === 0 ? (
+                            <div className="p-6 text-center text-gray-500 text-sm">No new notifications</div>
+                          ) : (
+                            notifications.map((n, idx) => (
+                              <div key={idx} className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!n.is_read ? 'bg-teal-50/30' : ''}`}>
+                                <p className="text-sm text-gray-800">{n.message}</p>
+                                <span className="text-xs text-gray-500 mt-1 block">
+                                  {new Date(n.created_at).toLocaleString()}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
