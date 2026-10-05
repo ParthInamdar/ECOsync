@@ -58,7 +58,7 @@ def seed_database():
                 location_name="North District",
                 location_lat=23.05,
                 location_lon=72.58,
-                image_url="https://placehold.co/400x400/e2e8f0/64748b?text=Power+Drill",
+                image_url="",
                 is_available=True
             ),
             Resource(
@@ -73,7 +73,7 @@ def seed_database():
                 location_name="South District",
                 location_lat=23.00,
                 location_lon=72.50,
-                image_url="https://placehold.co/400x400/e2e8f0/64748b?text=Python+Book",
+                image_url="",
                 is_available=True
             ),
             Resource(
@@ -90,7 +90,7 @@ def seed_database():
                 location_name="North District",
                 location_lat=23.05,
                 location_lon=72.58,
-                image_url="https://placehold.co/400x400/e2e8f0/64748b?text=Camping+Tent",
+                image_url="",
                 is_available=True
             )
         ]

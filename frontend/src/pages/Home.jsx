@@ -159,7 +159,7 @@ export default function Home() {
                     alt={resource.title} 
                     loading="lazy"
                     className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => { e.target.src = getFallbackImage(''); }}
+                    onError={(e) => { e.target.src = getFallbackImage(resource.title); e.target.onerror = null; }}
                   />
                 </div>
                 
