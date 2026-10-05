@@ -91,3 +91,26 @@ def get_activities():
     result = [a.to_dict() for a in activities]
     
     return jsonify({"success": True, "activities": result}), 200
+
+from app.models.issue import Issue
+
+@admin_bp.route('/issues', methods=['GET'])
+@jwt_required()
+def get_issues():
+    current_user_id = int(get_jwt_identity())
+    if not is_admin(current_user_id):
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+        
+    issues = Issue.query.order_by(Issue.created_at.desc()).all()
+    result = []
+    for i in issues:
+        result.append({
+            "id": i.id,
+            "username": i.user.username if i.user else "Guest",
+            "description": i.description,
+            "ai_response": i.ai_response,
+            "status": i.status,
+            "created_at": i.created_at.isoformat()
+        })
+        
+    return jsonify({"success": True, "issues": result}), 200

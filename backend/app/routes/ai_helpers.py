@@ -113,3 +113,65 @@ def suggest_price():
     except Exception as e:
         print(f"Groq API Error: {e}")
         return jsonify({"success": False, "message": "Failed to suggest price"}), 500
+
+@ai_helpers_bp.route('/report-issue', methods=['POST'])
+@jwt_required(optional=True)
+def report_issue():
+    data = request.get_json()
+    description = data.get('description')
+    
+    if not description:
+        return jsonify({"success": False, "message": "Issue description is required"}), 400
+        
+    api_key = os.getenv('GROQ_API_KEY')
+    if not api_key or api_key == 'your_api_key_here':
+        return jsonify({"success": False, "message": "Groq API Key not configured."}), 503
+        
+    client = Groq(api_key=api_key)
+    
+    prompt = f"""
+    You are an empathetic, concise, and helpful AI Support Assistant for the EcoSync platform.
+    A user has reported the following issue or bug:
+    
+    "{description}"
+    
+    Analyze the issue. Write a very brief reply to the user (1-2 sentences max). 
+    Acknowledge the specific issue they mentioned, apologize for the inconvenience, and assure them that the admin team will resolve it ASAP.
+    Do not use generic template responses, tailor it slightly to their text.
+    """
+    
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are a concise support assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            model="openai/gpt-oss-120b",
+            temperature=0.6,
+        )
+        
+        ai_response = chat_completion.choices[0].message.content.strip()
+        
+        # Save to database
+        from app.models.issue import Issue
+        from app.extensions import db
+        from flask_jwt_extended import get_jwt_identity
+        
+        current_user_id = get_jwt_identity()
+        if current_user_id:
+            current_user_id = int(current_user_id)
+            
+        new_issue = Issue(
+            user_id=current_user_id,
+            description=description,
+            ai_response=ai_response
+        )
+        
+        db.session.add(new_issue)
+        db.session.commit()
+        
+        return jsonify({"success": True, "ai_reply": ai_response, "issue_id": new_issue.id}), 200
+        
+    except Exception as e:
+        print(f"Groq API Error in report-issue: {e}")
+        return jsonify({"success": False, "message": "Failed to process issue"}), 500

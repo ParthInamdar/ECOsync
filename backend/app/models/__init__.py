@@ -13,3 +13,4 @@ from .message import Message
 from .report import Report
 from .block import Block
 from .activity import ActivityLog
+from .issue import Issue
