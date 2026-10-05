@@ -92,20 +92,18 @@ export default function Home() {
             className="flex overflow-x-auto gap-8 hide-scrollbar scroll-smooth py-2 px-2"
           >
             {[
-              { name: 'Cars', img: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Bikes', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Properties', img: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Electronics & Appliances', img: 'https://images.unsplash.com/photo-1583573636246-18cb2246697f?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Mobiles', img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Commercial Vehicles & Spares', img: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Jobs', img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Furniture', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Fashion', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Books, Sports & Hobbies', img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Pets', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200&h=200' },
-              { name: 'Services', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Books & Study', img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200&h=200', param: 'Books' },
+              { name: 'Tools & Equipment', img: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&q=80&w=200&h=200', param: 'Tools' },
+              { name: 'Electronics', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=80&w=200&h=200', param: 'Electronics' },
+              { name: 'Sports & Fitness', img: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=200&h=200', param: 'Sports' },
+              { name: 'Outdoor & Travel', img: 'https://images.unsplash.com/photo-1504280390227-331bf9bb92a4?auto=format&fit=crop&q=80&w=200&h=200', param: 'Outdoor' },
+              { name: 'Household', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=200&h=200', param: 'Household' },
+              { name: 'Hobbies & Creative', img: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=200&h=200', param: 'Hobbies' },
+              { name: 'Games & Entertainment', img: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=200&h=200', param: 'Games' },
+              { name: 'Mobility', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200&h=200', param: 'Mobility' },
+              { name: 'Other', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=200&h=200', param: 'Other' },
             ].map((cat) => (
-              <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.name.split(' ')[0].toLowerCase())}`} className="flex flex-col items-center gap-2 group flex-shrink-0 w-[110px]">
+              <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.param)}`} className="flex flex-col items-center gap-2 group flex-shrink-0 w-[110px]">
                 <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full hover:shadow-md transition-shadow overflow-hidden border-4 border-white shadow-sm">
                   <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                 </div>
@@ -124,7 +122,7 @@ export default function Home() {
 
         {/* Fresh Recommendations Header */}
         <div className="mb-4 flex justify-between items-end">
-          <h2 className="text-2xl font-normal text-[#002f34]">Fresh recommendations</h2>
+          <h2 className="text-2xl font-normal text-[#002f34]">Resources near you</h2>
         </div>
 
         {/* Resource Grid */}
@@ -138,29 +136,60 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
             {resources.map(resource => (
-              <Link key={resource.id} to={`/resource/${resource.id}`} className="bg-white rounded border border-gray-300 overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full group relative">
-                <div className="absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow-sm">
-                  <svg className="w-5 h-5 text-gray-900 hover:fill-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+              <Link key={resource.id} to={`/resource/${resource.id}`} className="bg-white rounded border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full group relative">
+                {/* Save Icon */}
+                <div className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-sm hover:bg-white text-gray-400 hover:text-red-500 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                 </div>
-                {resource.listing_type === 'FEATURED' && (
-                  <div className="absolute top-0 left-0 bg-[#ffce32] text-[10px] font-bold px-2 py-0.5 rounded-br uppercase z-10">
-                    Featured
+                
+                {/* Image Section */}
+                <div className="relative aspect-[4/3] w-full bg-gray-50 overflow-hidden border-b border-gray-100 flex items-center justify-center">
+                  {resource.image_url ? (
+                    <img 
+                      src={resource.image_url} 
+                      alt={resource.title} 
+                      loading="lazy"
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                    />
+                  ) : null}
+                  {/* Fallback Icon */}
+                  <div className={`flex-col items-center justify-center text-gray-400 ${resource.image_url ? 'hidden' : 'flex'}`}>
+                    <Sparkles className="w-8 h-8 mb-2 opacity-50" />
+                    <span className="text-[10px] font-medium uppercase tracking-wider">No Image</span>
                   </div>
-                )}
-                <div className="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden border-b border-gray-200 flex items-center justify-center p-4">
-                  <img src={resource.image_url} alt={resource.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200 mix-blend-multiply" />
                 </div>
+                
+                {/* Content Section */}
                 <div className="p-4 flex flex-col flex-grow">
-                  <p className="text-xl font-bold text-[#002f34] mb-1">
-                    {resource.price > 0 ? `₹ ${resource.price.toLocaleString('en-IN')}` : 'Free'}
-                  </p>
-                  <h3 className="text-[15px] font-normal text-gray-600 line-clamp-1 leading-tight mb-2">
+                  {/* Listing Type Badge */}
+                  <div className="mb-2">
+                    <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold tracking-wider uppercase rounded-sm">
+                      {resource.listing_type || 'SHARE'}
+                    </span>
+                  </div>
+                  
+                  {/* Title & Condition */}
+                  <h3 className="text-[15px] font-medium text-gray-900 line-clamp-1 leading-tight mb-1">
                     {resource.title}
                   </h3>
                   
-                  <div className="mt-auto pt-2 flex items-center justify-between text-[11px] text-gray-500 uppercase font-medium">
-                    <span className="truncate max-w-[120px]">{resource.location_name || 'India'}</span>
-                    <span>{new Date(resource.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                  {/* Price / Contextual Value */}
+                  <p className="text-[16px] font-bold text-[#006400] mb-2">
+                    {resource.listing_type === 'FREE' || resource.listing_type === 'DONATE' ? 'Free' :
+                     resource.listing_type === 'BORROW' ? 'Borrow' :
+                     resource.price > 0 ? `₹${resource.price}${resource.price_unit ? resource.price_unit : ''}` : 'Free'}
+                  </p>
+                  
+                  {/* Location & Metadata */}
+                  <div className="mt-auto pt-2 flex items-center justify-between text-[11px] text-gray-500 font-medium border-t border-gray-50">
+                    <div className="flex items-center gap-1 truncate max-w-[120px]">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{resource.location_name || 'India'}</span>
+                    </div>
+                    {resource.condition && (
+                      <span className="px-1.5 py-0.5 bg-gray-50 rounded text-[10px]">{resource.condition}</span>
+                    )}
                   </div>
                 </div>
               </Link>

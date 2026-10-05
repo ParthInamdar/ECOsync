@@ -100,7 +100,7 @@ export default function Navbar() {
               <input 
                 name="q"
                 type="text" 
-                placeholder='Search "Properties"' 
+                placeholder="Search resources nearby..." 
                 className="w-full bg-transparent py-2.5 px-4 text-sm text-gray-900 outline-none"
               />
               <button type="submit" className="bg-[#002f34] px-5 hover:bg-gray-900 transition-colors flex items-center justify-center">
