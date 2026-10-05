@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { MapPin, Star, Sparkles } from 'lucide-react';
+import { MapPin, Star, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../utils/api';
 
 const CATEGORIES = [
@@ -14,6 +14,15 @@ export default function Home() {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [recLoading, setRecLoading] = useState(false);
+  const scrollRef = useRef(null);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     api.get('/resources/')
@@ -69,29 +78,48 @@ export default function Home() {
       
       <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         
-        {/* Hero Categories Grid */}
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-4 mb-10">
-          {[
-            { name: 'Cars', img: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Bikes', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Properties', img: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Electronics & Appliances', img: 'https://images.unsplash.com/photo-1583573636246-18cb2246697f?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Mobiles', img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Commercial Vehicles & Spares', img: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Jobs', img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Furniture', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Fashion', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Books, Sports & Hobbies', img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Pets', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200&h=200' },
-            { name: 'Services', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=200&h=200' },
-          ].map((cat) => (
-            <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.name.split(' ')[0].toLowerCase())}`} className="flex flex-col items-center gap-2 group">
-              <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full hover:shadow-md transition-shadow overflow-hidden border-4 border-white shadow-sm">
-                <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-              </div>
-              <span className="text-[13px] font-medium text-gray-900 text-center leading-tight mt-1">{cat.name}</span>
-            </Link>
-          ))}
+        {/* Hero Categories Slider */}
+        <div className="relative mb-10 group px-8">
+          <button 
+            onClick={scrollLeft} 
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-200 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
+          >
+            <ChevronLeft className="w-6 h-6 text-gray-900" />
+          </button>
+          
+          <div 
+            ref={scrollRef}
+            className="flex overflow-x-auto gap-8 hide-scrollbar scroll-smooth py-2 px-2"
+          >
+            {[
+              { name: 'Cars', img: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Bikes', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Properties', img: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Electronics & Appliances', img: 'https://images.unsplash.com/photo-1583573636246-18cb2246697f?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Mobiles', img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Commercial Vehicles & Spares', img: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Jobs', img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Furniture', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Fashion', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Books, Sports & Hobbies', img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Pets', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200&h=200' },
+              { name: 'Services', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=200&h=200' },
+            ].map((cat) => (
+              <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.name.split(' ')[0].toLowerCase())}`} className="flex flex-col items-center gap-2 group flex-shrink-0 w-[110px]">
+                <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full hover:shadow-md transition-shadow overflow-hidden border-4 border-white shadow-sm">
+                  <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                </div>
+                <span className="text-[13px] font-medium text-gray-900 text-center leading-tight mt-1">{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+
+          <button 
+            onClick={scrollRight} 
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-200 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
+          >
+            <ChevronRight className="w-6 h-6 text-gray-900" />
+          </button>
         </div>
 
         {/* Fresh Recommendations Header */}
