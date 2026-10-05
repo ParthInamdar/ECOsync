@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { MapPin, Star, Sparkles, ChevronLeft, ChevronRight, BookOpen, Wrench, Laptop, Trophy, Tent, Home as HomeIcon, Palette, Gamepad2, Bike, Package } from 'lucide-react';
+import { MapPin, Star, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../utils/api';
 
 const CATEGORIES = [
@@ -92,27 +92,24 @@ export default function Home() {
             className="flex overflow-x-auto gap-8 hide-scrollbar scroll-smooth py-2 px-2"
           >
             {[
-              { name: 'Books & Study', icon: BookOpen, param: 'Books', color: 'bg-blue-100 text-blue-600' },
-              { name: 'Tools & Equipment', icon: Wrench, param: 'Tools', color: 'bg-orange-100 text-orange-600' },
-              { name: 'Electronics', icon: Laptop, param: 'Electronics', color: 'bg-gray-100 text-gray-800' },
-              { name: 'Sports & Fitness', icon: Trophy, param: 'Sports', color: 'bg-red-100 text-red-600' },
-              { name: 'Outdoor & Travel', icon: Tent, param: 'Outdoor', color: 'bg-green-100 text-green-700' },
-              { name: 'Household', icon: HomeIcon, param: 'Household', color: 'bg-teal-100 text-teal-600' },
-              { name: 'Hobbies & Creative', icon: Palette, param: 'Hobbies', color: 'bg-purple-100 text-purple-600' },
-              { name: 'Games & Entertainment', icon: Gamepad2, param: 'Games', color: 'bg-indigo-100 text-indigo-600' },
-              { name: 'Mobility', icon: Bike, param: 'Mobility', color: 'bg-yellow-100 text-yellow-700' },
-              { name: 'Other', icon: Package, param: 'Other', color: 'bg-gray-100 text-gray-500' },
-            ].map((cat) => {
-              const IconComponent = cat.icon;
-              return (
-                <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.param)}`} className="flex flex-col items-center gap-2 group flex-shrink-0 w-[110px]">
-                  <div className={`w-[90px] h-[90px] flex items-center justify-center rounded-full hover:shadow-md transition-all overflow-hidden border-2 border-white shadow-sm group-hover:scale-105 ${cat.color}`}>
-                    <IconComponent className="w-10 h-10" />
-                  </div>
-                  <span className="text-[13px] font-medium text-gray-900 text-center leading-tight mt-1">{cat.name}</span>
-                </Link>
-              );
-            })}
+              { name: 'Books & Study', img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=60&w=200&h=200', param: 'Books' },
+              { name: 'Tools & Equipment', img: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&q=60&w=200&h=200', param: 'Tools' },
+              { name: 'Electronics', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=60&w=200&h=200', param: 'Electronics' },
+              { name: 'Sports & Fitness', img: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=60&w=200&h=200', param: 'Sports' },
+              { name: 'Outdoor & Travel', img: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&q=60&w=200&h=200', param: 'Outdoor' },
+              { name: 'Household', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=60&w=200&h=200', param: 'Household' },
+              { name: 'Hobbies & Creative', img: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=60&w=200&h=200', param: 'Hobbies' },
+              { name: 'Games & Entertainment', img: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=60&w=200&h=200', param: 'Games' },
+              { name: 'Mobility', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=60&w=200&h=200', param: 'Mobility' },
+              { name: 'Other', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=60&w=200&h=200', param: 'Other' },
+            ].map((cat) => (
+              <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.param)}`} className="flex flex-col items-center gap-2 group flex-shrink-0 w-[110px]">
+                <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full hover:shadow-md transition-shadow overflow-hidden border-4 border-white shadow-sm">
+                  <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                </div>
+                <span className="text-[13px] font-medium text-gray-900 text-center leading-tight mt-1">{cat.name}</span>
+              </Link>
+            ))}
           </div>
 
           <button 
