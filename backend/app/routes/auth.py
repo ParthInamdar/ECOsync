@@ -15,10 +15,10 @@ def register():
         return jsonify({"success": False, "message": "Missing required fields", "error_code": "MISSING_FIELDS"}), 400
         
     if User.query.filter_by(username=data['username']).first():
-        return jsonify({"success": False, "message": "Username already exists", "error_code": "USERNAME_EXISTS"}), 409
+        return jsonify({"success": False, "message": "This username is already taken by another account. Please choose a different username.", "error_code": "USERNAME_EXISTS"}), 409
         
     if User.query.filter_by(email=data['email']).first():
-        return jsonify({"success": False, "message": "Email already exists", "error_code": "EMAIL_EXISTS"}), 409
+        return jsonify({"success": False, "message": "This email is already registered. Try logging in instead.", "error_code": "EMAIL_EXISTS"}), 409
         
     hashed_password = generate_password_hash(data['password'])
     
@@ -48,8 +48,11 @@ def login():
         
     user = User.query.filter_by(email=data['email']).first()
     
-    if not user or not check_password_hash(user.password_hash, data['password']):
-        return jsonify({"success": False, "message": "Invalid email or password", "error_code": "INVALID_CREDENTIALS"}), 401
+    if not user:
+        return jsonify({"success": False, "message": "This email is not registered. Please sign up first.", "error_code": "USER_NOT_FOUND"}), 404
+        
+    if not check_password_hash(user.password_hash, data['password']):
+        return jsonify({"success": False, "message": "Invalid password. Please try again.", "error_code": "INVALID_PASSWORD"}), 401
         
     # Create JWT
     access_token = create_access_token(identity=str(user.id), expires_delta=datetime.timedelta(days=1))
