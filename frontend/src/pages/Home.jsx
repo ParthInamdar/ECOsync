@@ -67,28 +67,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white pb-12 font-sans">
       
-      {/* Category Navigation (Sub-navbar) */}
-      <div className="bg-white border-b border-gray-200 shadow-sm mb-6">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center overflow-x-auto py-2 hide-scrollbar">
-            <button className="flex items-center gap-2 text-sm font-bold text-gray-900 mr-6 hover:text-blue-600 transition-colors uppercase whitespace-nowrap">
-              <span className="font-bold text-lg">≡</span> ALL CATEGORIES
-            </button>
-            <div className="flex items-center gap-5">
-              {['Cars', 'Motorcycles', 'Mobile Phones', 'For Sale: Houses & Apartments', 'For Rent: Houses & Apartments', 'Beds-Wardrobes', 'TVs, Video - Audio'].map(cat => (
-                <Link key={cat} to={`/search?category=${encodeURIComponent(cat.split(' ')[0].toLowerCase())}`} className="text-[13px] text-gray-700 hover:text-gray-900 whitespace-nowrap">
-                  {cat}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         
         {/* Hero Categories Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-4 mb-10">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-4 mb-10">
           {[
             { name: 'Cars', img: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=200&h=200' },
             { name: 'Bikes', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200&h=200' },
@@ -99,6 +81,9 @@ export default function Home() {
             { name: 'Jobs', img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=200&h=200' },
             { name: 'Furniture', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=200&h=200' },
             { name: 'Fashion', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Books, Sports & Hobbies', img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Pets', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Services', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=200&h=200' },
           ].map((cat) => (
             <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.name.split(' ')[0].toLowerCase())}`} className="flex flex-col items-center gap-2 group">
               <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full hover:shadow-md transition-shadow overflow-hidden border-4 border-white shadow-sm">

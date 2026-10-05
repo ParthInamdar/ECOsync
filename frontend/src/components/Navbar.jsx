@@ -11,6 +11,8 @@ export default function Navbar() {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const [userLocation, setUserLocation] = useState("India");
+
   useEffect(() => {
     if (user) {
       api.get('/notifications/')
@@ -23,6 +25,27 @@ export default function Navbar() {
       api.get('/chat/unread')
         .then(res => setUnreadChatCount(res.data.unread_count))
         .catch(err => console.error("Failed to fetch unread chats", err));
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            try {
+              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+              const data = await res.json();
+              if (data && data.address) {
+                const city = data.address.city || data.address.town || data.address.village || data.address.state || "India";
+                setUserLocation(city);
+              }
+            } catch (err) {
+              console.error("Failed to reverse geocode", err);
+            }
+          },
+          (err) => {
+            console.warn("Location permission denied or failed.");
+          },
+          { timeout: 5000 }
+        );
+      }
     }
   }, [user]);
 
@@ -58,7 +81,8 @@ export default function Navbar() {
               <input 
                 type="text" 
                 placeholder="India" 
-                defaultValue="India"
+                value={userLocation}
+                onChange={(e) => setUserLocation(e.target.value)}
                 className="w-full bg-transparent py-2.5 pl-10 pr-10 text-sm text-gray-900 outline-none"
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
