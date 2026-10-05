@@ -162,17 +162,17 @@ export default function Navbar() {
                 </div>
               </div>
             
-            {/* SELL Button styled like OLX */}
+            {/* Action Button styled for EcoSync */}
             <Link 
               to="/add" 
               className="relative ml-2 inline-flex items-center justify-center rounded-full bg-white px-5 py-1.5 text-sm font-bold text-gray-900 transition-transform hover:scale-105"
               style={{
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1), inset 0 0 0 5px white, 0 0 0 4px transparent, -2px -2px 0 2px #3a77ff, 2px -2px 0 2px #23e5db, 2px 2px 0 2px #ffce32, -2px 2px 0 2px #ff7733',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1), inset 0 0 0 5px white, 0 0 0 4px transparent, -2px -2px 0 2px #046c4e, 2px -2px 0 2px #059669, 2px 2px 0 2px #34d399, -2px 2px 0 2px #10b981',
                 border: '1px solid transparent'
               }}
             >
               <Plus className="w-5 h-5 mr-1 text-black font-bold" strokeWidth={3} />
-              SELL
+              RENT/SELL
             </Link>
           </div>
 
