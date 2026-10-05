@@ -109,32 +109,58 @@ export default function Navbar() {
             </form>
           </div>
 
-          {/* User Actions */}
-          <div className="flex items-center gap-4 flex-shrink-0 pl-2">
-            
-            {user ? (
-              <div className="flex items-center gap-4">
-                <Link to="/messages" className="text-gray-900 hover:text-gray-600 font-bold text-sm">
-                  <MessageSquare className="w-6 h-6 inline-block" />
-                </Link>
-                <button className="text-gray-900 hover:text-gray-600 font-bold text-sm">
-                  <Bell className="w-6 h-6 inline-block" />
-                </button>
-                <Link to={`/profile/${user.id}`} className="flex items-center gap-2 text-sm font-bold text-gray-900 hover:underline">
-                  <UserCircle className="w-8 h-8 text-gray-700" />
-                </Link>
-                <button 
-                  onClick={logout}
-                  className="text-sm font-bold text-gray-900 hover:underline"
-                >
-                  Logout
-                </button>
+            {/* User Actions */}
+            <div className="flex items-center gap-6 flex-shrink-0 pl-2">
+              
+              {user && (
+                <div className="flex items-center gap-5">
+                  <Link to="/messages" className="flex flex-col items-center justify-center text-gray-800 hover:text-black transition-colors relative">
+                    <MessageSquare className="w-5 h-5" />
+                    <span className="text-[11px] font-bold mt-1">Messages</span>
+                    {unreadChatCount > 0 && <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{unreadChatCount}</span>}
+                  </Link>
+                  <button onClick={handleToggleNotifications} className="flex flex-col items-center justify-center text-gray-800 hover:text-black transition-colors relative">
+                    <Bell className="w-5 h-5" />
+                    <span className="text-[11px] font-bold mt-1">Alerts</span>
+                    {unreadCount > 0 && <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>}
+                  </button>
+                </div>
+              )}
+
+              {/* Profile Hover Dropdown */}
+              <div className="relative group cursor-pointer pb-4 -mb-4">
+                <div className="flex flex-col items-center justify-center text-gray-800 group-hover:text-black transition-colors">
+                  <UserCircle className="w-5 h-5" />
+                  <span className="text-[11px] font-bold mt-1">Profile</span>
+                </div>
+                
+                <div className="absolute top-full right-1/2 translate-x-1/2 pt-2 w-72 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-sm border border-gray-100 relative text-left">
+                    {/* Pink top border indicator */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-[#ff3f6c]"></div>
+                    
+                    <div className="p-5 border-b border-gray-100 mt-1">
+                      <h3 className="font-bold text-[15px] text-gray-800 mb-0.5">Welcome</h3>
+                      <p className="text-[13px] text-gray-500 mb-4">To access account and manage listings</p>
+                      {user ? (
+                        <button onClick={logout} className="w-full py-2.5 text-sm font-bold text-[#ff3f6c] border border-gray-200 hover:border-[#ff3f6c] transition-colors rounded">
+                          LOGOUT
+                        </button>
+                      ) : (
+                        <Link to="/login" className="block w-full text-center py-2.5 text-sm font-bold text-[#ff3f6c] border border-[#ff3f6c] hover:bg-[#ff3f6c] hover:text-white transition-colors rounded">
+                          LOGIN / SIGNUP
+                        </Link>
+                      )}
+                    </div>
+                    <div className="py-2">
+                      <Link to={user ? `/profile/${user.id}` : "/login"} className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Profile</Link>
+                      <Link to="/add" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Listings</Link>
+                      <Link to="/" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Saved Items</Link>
+                      <Link to="/" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Contact Us</Link>
+                    </div>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <Link to="/login" className="text-base font-bold text-gray-900 hover:underline underline-offset-4 decoration-2">
-                Login
-              </Link>
-            )}
             
             {/* SELL Button styled like OLX */}
             <Link 
