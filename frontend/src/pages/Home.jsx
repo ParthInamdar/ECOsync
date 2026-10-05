@@ -16,6 +16,16 @@ export default function Home() {
   const [recLoading, setRecLoading] = useState(false);
   const scrollRef = useRef(null);
 
+  const getFallbackImage = (title) => {
+    const t = (title || '').toLowerCase();
+    if (t.includes('book')) return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=60&w=400';
+    if (t.includes('drill') || t.includes('tool')) return 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&q=60&w=400';
+    if (t.includes('tent') || t.includes('camp')) return 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&q=60&w=400';
+    if (t.includes('laptop') || t.includes('phone')) return 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=60&w=400';
+    if (t.includes('bike') || t.includes('car')) return 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=60&w=400';
+    return 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=60&w=400';
+  };
+
   const scrollLeft = () => {
     if (scrollRef.current) scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
   };
@@ -144,20 +154,13 @@ export default function Home() {
                 
                 {/* Image Section */}
                 <div className="relative aspect-[4/3] w-full bg-gray-50 overflow-hidden border-b border-gray-100 flex items-center justify-center">
-                  {resource.image_url ? (
-                    <img 
-                      src={resource.image_url} 
-                      alt={resource.title} 
-                      loading="lazy"
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                    />
-                  ) : null}
-                  {/* Fallback Icon */}
-                  <div className={`flex-col items-center justify-center text-gray-400 ${resource.image_url ? 'hidden' : 'flex'}`}>
-                    <Sparkles className="w-8 h-8 mb-2 opacity-50" />
-                    <span className="text-[10px] font-medium uppercase tracking-wider">No Image</span>
-                  </div>
+                  <img 
+                    src={resource.image_url || getFallbackImage(resource.title)} 
+                    alt={resource.title} 
+                    loading="lazy"
+                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => { e.target.src = getFallbackImage(''); }}
+                  />
                 </div>
                 
                 {/* Content Section */}
