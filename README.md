@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="frontend/public/logo.jpg" alt="EcoSync Logo" width="200" />
+  <img src="frontend/public/logo.png" alt="EcoSync Logo" width="200" />
 </div>
 
 # EcoSync 🌱
@@ -52,7 +52,7 @@ pip install -r requirements.txt
 cp .env.example .env
 
 # Initialize the database
-python init_db.py
+python scripts/init_db.py
 
 # Run the backend server (starts on http://localhost:5000)
 python run.py
