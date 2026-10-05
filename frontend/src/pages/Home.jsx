@@ -18,11 +18,11 @@ export default function Home() {
 
   const getFallbackImage = (title) => {
     const t = (title || '').toLowerCase();
-    if (t.includes('book')) return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=60&w=400';
-    if (t.includes('drill') || t.includes('tool')) return 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&q=60&w=400';
-    if (t.includes('tent') || t.includes('camp')) return 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&q=60&w=400';
-    if (t.includes('laptop') || t.includes('phone')) return 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=60&w=400';
-    if (t.includes('bike') || t.includes('car')) return 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=60&w=400';
+    if (t.includes('book') || t.includes('python')) return '/images/python_book.jpg';
+    if (t.includes('drill') || t.includes('tool')) return '/images/power_drill.jpg';
+    if (t.includes('tent') || t.includes('camp')) return '/images/camping_tent.jpg';
+    
+    // Generic fallback for anything else that might have been added
     return 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=60&w=400';
   };
 
