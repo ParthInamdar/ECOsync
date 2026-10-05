@@ -31,7 +31,7 @@ export default function Register() {
   return (
     <div className="flex min-h-[calc(100vh-72px)] flex-col justify-center py-12 sm:px-6 lg:px-8 bg-[#f2f4f5]">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <img src="/logo.png" alt="EcoSync Logo" className="mx-auto h-32 w-auto mb-4 scale-110" />
+        <img src="/logo.png" alt="EcoSync Logo" className="mx-auto h-20 w-auto mb-4" />
         <h2 className="mt-2 text-center text-2xl font-bold tracking-tight text-gray-900">
           Create an account
         </h2>
