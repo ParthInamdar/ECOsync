@@ -44,7 +44,7 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center pr-4 py-1">
             <Link to="/" className="flex items-center">
-              <img src="/logo.jpg" alt="EcoSync Logo" className="h-16 w-auto mix-blend-multiply object-contain scale-110" />
+              <img src="/logo.png" alt="EcoSync Logo" className="h-16 w-auto object-contain scale-110" />
             </Link>
           </div>
           

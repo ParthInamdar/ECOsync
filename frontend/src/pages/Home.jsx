@@ -65,7 +65,6 @@ export default function Home() {
   }, [user]);
 
   return (
-  return (
     <div className="min-h-screen bg-white pb-12 font-sans">
       
       {/* Category Navigation (Sub-navbar) */}
@@ -91,21 +90,21 @@ export default function Home() {
         {/* Hero Categories Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-4 mb-10">
           {[
-            { name: 'Cars', img: 'https://cdn-icons-png.flaticon.com/512/3204/3204905.png' },
-            { name: 'Bikes', img: 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png' },
-            { name: 'Properties', img: 'https://cdn-icons-png.flaticon.com/512/2038/2038337.png' },
-            { name: 'Electronics & Appliances', img: 'https://cdn-icons-png.flaticon.com/512/1261/1261073.png' },
-            { name: 'Mobiles', img: 'https://cdn-icons-png.flaticon.com/512/3110/3110190.png' },
-            { name: 'Commercial Vehicles & Spares', img: 'https://cdn-icons-png.flaticon.com/512/2932/2932223.png' },
-            { name: 'Jobs', img: 'https://cdn-icons-png.flaticon.com/512/2942/2942821.png' },
-            { name: 'Furniture', img: 'https://cdn-icons-png.flaticon.com/512/2627/2627191.png' },
-            { name: 'Fashion', img: 'https://cdn-icons-png.flaticon.com/512/3050/3050239.png' },
+            { name: 'Cars', img: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Bikes', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Properties', img: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Electronics & Appliances', img: 'https://images.unsplash.com/photo-1583573636246-18cb2246697f?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Mobiles', img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Commercial Vehicles & Spares', img: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Jobs', img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Furniture', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=200&h=200' },
+            { name: 'Fashion', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=200&h=200' },
           ].map((cat) => (
             <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.name.split(' ')[0].toLowerCase())}`} className="flex flex-col items-center gap-2 group">
-              <div className="w-[100px] h-[100px] flex items-center justify-center p-3 rounded-full hover:shadow-md transition-shadow">
-                <img src={cat.img} alt={cat.name} className="w-full h-full object-contain drop-shadow-sm group-hover:scale-110 transition-transform" />
+              <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full hover:shadow-md transition-shadow overflow-hidden border-4 border-white shadow-sm">
+                <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
               </div>
-              <span className="text-[13px] font-medium text-gray-900 text-center leading-tight">{cat.name}</span>
+              <span className="text-[13px] font-medium text-gray-900 text-center leading-tight mt-1">{cat.name}</span>
             </Link>
           ))}
         </div>
