@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Search, MapPin, Plus, UserCircle, Bell, MessageSquare } from 'lucide-react';
 import api from '../utils/api';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [userLocation, setUserLocation] = useState("India");
+
+  const isAuthScreen = ['/login', '/register', '/reset-password'].includes(location.pathname);
 
   useEffect(() => {
     if (user) {
@@ -58,6 +61,8 @@ export default function Navbar() {
       });
     }
   };
+
+  if (isAuthScreen) return null;
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">

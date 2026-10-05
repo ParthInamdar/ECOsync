@@ -1,6 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Footer() {
+  const location = useLocation();
+  const isAuthScreen = ['/login', '/register', '/reset-password'].includes(location.pathname);
+
+  if (isAuthScreen) return null;
+
   return (
     <footer className="bg-[#002f34] text-gray-200 py-12 border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
