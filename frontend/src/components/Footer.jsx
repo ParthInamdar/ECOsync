@@ -108,18 +108,18 @@ export default function Footer() {
 
       {/* AI Issue Bot Floating Window */}
       {showIssueBot && (
-        <div className="fixed bottom-6 right-6 w-80 bg-white rounded-lg shadow-2xl overflow-hidden z-50 flex flex-col border border-gray-200">
-          <div className="bg-teal-700 p-3 flex justify-between items-center text-white">
+        <div className="fixed bottom-6 right-6 w-[400px] bg-white rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col border border-gray-200">
+          <div className="bg-teal-700 p-4 flex justify-between items-center text-white">
             <div className="flex items-center gap-2 font-semibold">
-              <Bot className="w-5 h-5" />
+              <Bot className="w-6 h-6" />
               Report an Issue
             </div>
-            <button onClick={() => setShowIssueBot(false)} className="hover:bg-teal-600 p-1 rounded transition-colors">
-              <X className="w-4 h-4" />
+            <button onClick={() => setShowIssueBot(false)} className="hover:bg-teal-600 p-1.5 rounded transition-colors">
+              <X className="w-5 h-5" />
             </button>
           </div>
           
-          <div className="flex-1 p-4 bg-gray-50 h-64 overflow-y-auto flex flex-col gap-3">
+          <div className="flex-1 p-5 bg-gray-50 h-80 overflow-y-auto flex flex-col gap-4">
             {issueResponses.map((msg, i) => (
               <div key={i} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-2 rounded text-sm ${msg.type === 'user' ? 'bg-teal-600 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'}`}>
