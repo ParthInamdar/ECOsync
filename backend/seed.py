@@ -11,6 +11,7 @@ from app.models.user import User
 from app.models.category import Category
 from app.models.resource import Resource
 from app.models.review import Review
+from app.models.activity import ActivityLog
 
 def seed_database():
     app = create_app()
@@ -95,6 +96,19 @@ def seed_database():
             )
         ]
         db.session.add_all(resources)
+        db.session.commit()
+
+        print("Seeding Activity Logs...")
+        activities = [
+            ActivityLog(user_id=admin.id, action="USER_LOGIN", details="Admin logged in to the system", ip_address="192.168.1.1", created_at=datetime.utcnow() - timedelta(days=2)),
+            ActivityLog(user_id=user1.id, action="USER_REGISTER", details="New user registered", ip_address="192.168.1.100", created_at=datetime.utcnow() - timedelta(days=1)),
+            ActivityLog(user_id=user1.id, action="RESOURCE_CREATED", details="Created resource 'Power Drill'", ip_address="192.168.1.100", created_at=datetime.utcnow() - timedelta(hours=20)),
+            ActivityLog(user_id=user2.id, action="USER_REGISTER", details="New user registered", ip_address="192.168.1.101", created_at=datetime.utcnow() - timedelta(hours=10)),
+            ActivityLog(user_id=user2.id, action="RESOURCE_CREATED", details="Created resource 'Python Programming Book'", ip_address="192.168.1.101", created_at=datetime.utcnow() - timedelta(hours=9)),
+            ActivityLog(user_id=user1.id, action="RESOURCE_CREATED", details="Created resource 'Camping Tent (4 Person)'", ip_address="192.168.1.100", created_at=datetime.utcnow() - timedelta(hours=5)),
+            ActivityLog(user_id=user2.id, action="USER_LOGIN", details="User logged in", ip_address="192.168.1.101", created_at=datetime.utcnow() - timedelta(hours=1)),
+        ]
+        db.session.add_all(activities)
         db.session.commit()
 
         print("Database seeded successfully!")

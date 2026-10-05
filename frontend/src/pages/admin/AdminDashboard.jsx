@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
   const [resources, setResources] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [showConfirm, setShowConfirm] = useState(false);
@@ -28,9 +29,12 @@ export default function AdminDashboard() {
         if (activeTab === 'users') {
           const res = await api.get('/admin/users');
           setUsers(res.data.users);
-        } else {
+        } else if (activeTab === 'resources') {
           const res = await api.get('/admin/resources');
           setResources(res.data.resources);
+        } else if (activeTab === 'activities') {
+          const res = await api.get('/admin/activities');
+          setActivities(res.data.activities);
         }
       } catch (err) {
         console.error("Failed to fetch admin data", err);
@@ -108,6 +112,13 @@ export default function AdminDashboard() {
             >
               <Package className="w-4 h-4" /> Resources
             </button>
+            <button
+              onClick={() => setActiveTab('activities')}
+              className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 ${activeTab === 'activities' ? 'text-teal-600 border-b-2 border-teal-600' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 
+              Activity Logs
+            </button>
           </div>
 
           <div className="p-6">
@@ -178,6 +189,46 @@ export default function AdminDashboard() {
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3">Date & Time</th>
+                      <th className="px-4 py-3">User</th>
+                      <th className="px-4 py-3">Action Type</th>
+                      <th className="px-4 py-3">Details</th>
+                      <th className="px-4 py-3">IP Address</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activities.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="px-4 py-8 text-center text-gray-500">No activity logs found.</td>
+                      </tr>
+                    ) : (
+                      activities.map(a => (
+                        <tr key={a.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-gray-500">
+                            {new Date(a.created_at).toLocaleString('en-IN', {
+                              day: '2-digit', month: 'short', year: 'numeric',
+                              hour: '2-digit', minute: '2-digit'
+                            })}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-900">{a.username || 'System'}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-1 bg-gray-100 rounded text-[10px] font-bold tracking-wider uppercase">
+                              {a.action}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">{a.details}</td>
+                          <td className="px-4 py-3 text-gray-400 font-mono text-xs">{a.ip_address || 'N/A'}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

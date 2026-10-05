@@ -76,3 +76,18 @@ def delete_resource(resource_id):
     db.session.delete(resource)
     db.session.commit()
     return jsonify({"success": True, "message": "Resource deleted"}), 200
+
+from app.models.activity import ActivityLog
+
+@admin_bp.route('/activities', methods=['GET'])
+@jwt_required()
+def get_activities():
+    current_user_id = int(get_jwt_identity())
+    if not is_admin(current_user_id):
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+        
+    # Order by newest first
+    activities = ActivityLog.query.order_by(ActivityLog.created_at.desc()).all()
+    result = [a.to_dict() for a in activities]
+    
+    return jsonify({"success": True, "activities": result}), 200
