@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
-import { Shield, Trash2, Users, Package } from 'lucide-react';
+import { Shield, Trash2, Users, Package, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
@@ -10,6 +10,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
   const [resources, setResources] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,9 +26,15 @@ export default function AdminDashboard() {
         if (activeTab === 'users') {
           const res = await api.get('/admin/users');
           setUsers(res.data.users);
-        } else {
+        } else if (activeTab === 'resources') {
           const res = await api.get('/admin/resources');
           setResources(res.data.resources);
+        } else if (activeTab === 'activities') {
+          const res = await api.get('/admin/activities');
+          setActivities(res.data.activities);
+        } else if (activeTab === 'issues') {
+          const res = await api.get('/admin/issues');
+          setIssues(res.data.issues);
         }
       } catch (err) {
         console.error("Failed to fetch admin data", err);
@@ -58,7 +66,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading && users.length === 0 && resources.length === 0) {
+  if (loading && users.length === 0 && resources.length === 0 && activities.length === 0 && issues.length === 0) {
     return <div className="min-h-screen flex items-center justify-center">Loading Admin Dashboard...</div>;
   }
 
@@ -72,7 +80,7 @@ export default function AdminDashboard() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Admin Control Panel</h1>
-            <p className="text-sm text-gray-500">Manage users and community resources.</p>
+            <p className="text-sm text-gray-500">Manage users, community resources, issues, and activity logs.</p>
           </div>
         </div>
 
@@ -90,10 +98,23 @@ export default function AdminDashboard() {
             >
               <Package className="w-4 h-4" /> Resources
             </button>
+            <button
+              onClick={() => setActiveTab('activities')}
+              className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 ${activeTab === 'activities' ? 'text-teal-600 border-b-2 border-teal-600' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 
+              Activity Logs
+            </button>
+            <button
+              onClick={() => setActiveTab('issues')}
+              className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 ${activeTab === 'issues' ? 'text-teal-600 border-b-2 border-teal-600' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+            >
+              <AlertCircle className="w-4 h-4" /> Issues
+            </button>
           </div>
 
           <div className="p-6">
-            {activeTab === 'users' ? (
+            {activeTab === 'users' && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
@@ -130,7 +151,9 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
-            ) : (
+            )}
+
+            {activeTab === 'resources' && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
@@ -164,9 +187,92 @@ export default function AdminDashboard() {
                 </table>
               </div>
             )}
+
+            {activeTab === 'activities' && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3">Date & Time</th>
+                      <th className="px-4 py-3">User</th>
+                      <th className="px-4 py-3">Action Type</th>
+                      <th className="px-4 py-3">Details</th>
+                      <th className="px-4 py-3">IP Address</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activities.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="px-4 py-8 text-center text-gray-500">No activity logs found.</td>
+                      </tr>
+                    ) : (
+                      activities.map(a => (
+                        <tr key={a.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-gray-500">
+                            {new Date(a.created_at).toLocaleString('en-IN', {
+                              day: '2-digit', month: 'short', year: 'numeric',
+                              hour: '2-digit', minute: '2-digit'
+                            })}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-900">{a.username || 'System'}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-1 bg-gray-100 rounded text-[10px] font-bold tracking-wider uppercase">
+                              {a.action}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">{a.details}</td>
+                          <td className="px-4 py-3 text-gray-400 font-mono text-xs">{a.ip_address || 'N/A'}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {activeTab === 'issues' && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3">Date & Time</th>
+                      <th className="px-4 py-3">User</th>
+                      <th className="px-4 py-3 w-1/3">Issue Description</th>
+                      <th className="px-4 py-3 w-1/3">AI Response</th>
+                      <th className="px-4 py-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {issues.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="px-4 py-8 text-center text-gray-500">No issues reported yet.</td>
+                      </tr>
+                    ) : (
+                      issues.map(i => (
+                        <tr key={i.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-gray-500">
+                            {new Date(i.created_at).toLocaleString('en-IN', {
+                              day: '2-digit', month: 'short', year: 'numeric',
+                              hour: '2-digit', minute: '2-digit'
+                            })}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-900">{i.username}</td>
+                          <td className="px-4 py-3 text-gray-800 break-words">{i.description}</td>
+                          <td className="px-4 py-3 text-gray-500 italic text-xs break-words">{i.ai_response}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase ${i.status === 'OPEN' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                              {i.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
-
       </div>
     </div>
   );
