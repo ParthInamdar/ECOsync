@@ -82,7 +82,7 @@ export default function Home() {
         <div className="relative mb-10 group px-8">
           <button 
             onClick={scrollLeft} 
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-200 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-200 rounded-full p-2 transition-opacity focus:outline-none"
           >
             <ChevronLeft className="w-6 h-6 text-gray-900" />
           </button>
@@ -116,7 +116,7 @@ export default function Home() {
 
           <button 
             onClick={scrollRight} 
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-200 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-200 rounded-full p-2 transition-opacity focus:outline-none"
           >
             <ChevronRight className="w-6 h-6 text-gray-900" />
           </button>

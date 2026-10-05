@@ -73,7 +73,7 @@ export default function Navbar() {
           
           {/* Search Bars */}
           <div className="hidden md:flex flex-1 max-w-4xl mx-4 gap-4 items-center">
-            {/* Location Selector */}
+            {/* Location Display */}
             <div className="relative flex w-1/4 max-w-[250px] border-2 border-gray-800 rounded flex-shrink-0 bg-white">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-500" />
@@ -82,12 +82,9 @@ export default function Navbar() {
                 type="text" 
                 placeholder="India" 
                 value={userLocation}
-                onChange={(e) => setUserLocation(e.target.value)}
-                className="w-full bg-transparent py-2.5 pl-10 pr-10 text-sm text-gray-900 outline-none"
+                readOnly
+                className="w-full bg-transparent py-2.5 pl-10 pr-3 text-sm text-gray-900 outline-none cursor-default"
               />
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-              </div>
             </div>
 
             {/* Main Search */}
