@@ -34,7 +34,7 @@ def seed_database():
 
         from werkzeug.security import generate_password_hash
         print("Seeding Users...")
-        admin = User(username="admin", email="admin@ecosync.local", role="ADMIN", password_hash=generate_password_hash("admin123"))
+        admin = User(username="super-admin", email="parth020716@gmail.com", role="ADMIN", password_hash=generate_password_hash("admin123"))
         
         user1 = User(username="john_doe", email="john@example.com", password_hash=generate_password_hash("password123"))
 

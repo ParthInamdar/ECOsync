@@ -122,7 +122,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="p-6">
-            {activeTab === 'users' ? (
+            {activeTab === 'users' && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
@@ -159,7 +159,9 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
-            ) : (
+            )}
+
+            {activeTab === 'resources' && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
@@ -192,7 +194,9 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
-            ) : (
+            )}
+
+            {activeTab === 'activities' && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
