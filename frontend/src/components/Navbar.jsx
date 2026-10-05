@@ -28,7 +28,11 @@ export default function Navbar() {
       api.get('/chat/unread')
         .then(res => setUnreadChatCount(res.data.unread_count))
         .catch(err => console.error("Failed to fetch unread chats", err));
+    }
+  }, [user, location.pathname]);
 
+  useEffect(() => {
+    if (user && userLocation === "India") {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
