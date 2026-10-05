@@ -193,8 +193,8 @@ export default function Navbar() {
                       )}
                       <Link to={user ? `/profile/${user.id}` : "/login"} className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Profile</Link>
                       <Link to="/add" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Resources</Link>
-                      <Link to="/" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Saved Items</Link>
-                      <Link to="/" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Contact Us</Link>
+                      <Link to="/saved" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Saved Items</Link>
+                      <a href="mailto:parth020716@gmail.com" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Contact Us</a>
                     </div>
                   </div>
                 </div>
