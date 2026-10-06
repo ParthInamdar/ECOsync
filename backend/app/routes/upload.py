@@ -41,9 +41,9 @@ def upload_image():
         file_path = os.path.join(upload_folder, unique_filename)
         file.save(file_path)
         
-        # We assume backend runs on port 5000 and is served directly
-        # Typically in dev we can just return the local static path
-        file_url = f"http://localhost:5000/static/uploads/{unique_filename}"
+        # Use environment variable or dynamic host URL for the uploaded file link
+        base_url = os.environ.get('PUBLIC_API_URL', request.host_url.rstrip('/'))
+        file_url = f"{base_url}/static/uploads/{unique_filename}"
         
         return jsonify({
             "success": True,

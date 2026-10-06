@@ -16,6 +16,10 @@ class User(db.Model):
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Password Reset
+    reset_code = db.Column(db.String(6), nullable=True)
+    reset_expiry = db.Column(db.DateTime, nullable=True)
+    
     # Relationships
     resources = db.relationship('Resource', backref='owner', lazy=True)
     requests = db.relationship('Request', foreign_keys='Request.requester_id', backref='requester', lazy=True)

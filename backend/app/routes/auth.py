@@ -74,8 +74,6 @@ import smtplib
 from email.mime.text import MIMEText
 import os
 
-RESET_CODES = {}
-
 @auth_bp.route('/send-reset-code', methods=['POST'])
 def send_reset_code():
     data = request.get_json()
@@ -91,10 +89,9 @@ def send_reset_code():
         
     # Generate 6-digit code
     code = f"{random.randint(100000, 999999)}"
-    RESET_CODES[email] = {
-        "code": code,
-        "expiry": datetime.datetime.now() + datetime.timedelta(minutes=15)
-    }
+    user.reset_code = code
+    user.reset_expiry = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+    db.session.commit()
     
     # Send email (ensure MAIL_USERNAME and MAIL_PASSWORD are in .env)
     sender_email = os.environ.get('MAIL_USERNAME')
@@ -130,25 +127,27 @@ def reset_password():
     if not email or not code or not new_password:
         return jsonify({"success": False, "message": "Email, code, and new password are required"}), 400
         
-    if email not in RESET_CODES:
-        return jsonify({"success": False, "message": "No reset request found for this email"}), 400
-        
-    reset_data = RESET_CODES[email]
-    if datetime.datetime.now() > reset_data['expiry']:
-        del RESET_CODES[email]
-        return jsonify({"success": False, "message": "Verification code has expired"}), 400
-        
-    if reset_data['code'] != code:
-        return jsonify({"success": False, "message": "Invalid verification code"}), 400
-        
     user = User.query.filter_by(email=email).first()
     if not user:
         return jsonify({"success": False, "message": "No account found"}), 404
         
+    if not user.reset_code or not user.reset_expiry:
+        return jsonify({"success": False, "message": "No reset request found for this email"}), 400
+        
+    if datetime.datetime.utcnow() > user.reset_expiry:
+        user.reset_code = None
+        user.reset_expiry = None
+        db.session.commit()
+        return jsonify({"success": False, "message": "Verification code has expired"}), 400
+        
+    if user.reset_code != code:
+        return jsonify({"success": False, "message": "Invalid verification code"}), 400
+        
     user.password_hash = generate_password_hash(new_password)
+    user.reset_code = None
+    user.reset_expiry = None
     db.session.commit()
     
-    del RESET_CODES[email]
     return jsonify({"success": True, "message": "Password reset successfully. You can now login."}), 200
 
 @auth_bp.route('/me', methods=['GET'])

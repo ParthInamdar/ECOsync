@@ -113,11 +113,7 @@ def get_recommendations():
         )
         
         text_response = chat_completion.choices[0].message.content.strip().replace('```json', '').replace('```', '')
-        
-        print("--- GROQ PROMPT ---")
-        print(prompt)
-        print("--- GROQ RESPONSE ---")
-        print(text_response)
+
         
         recommended_ids = json.loads(text_response)
         

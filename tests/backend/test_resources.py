@@ -9,7 +9,7 @@ def test_create_resource(client, auth_headers):
         "title": "Test Resource",
         "description": "Test description",
         "category_id": 1,
-        "listing_type": "OFFER",
+        "listing_type": "FREE",
         "sharing_type": "LEND",
         "condition": "GOOD"
     }, headers=auth_headers)
