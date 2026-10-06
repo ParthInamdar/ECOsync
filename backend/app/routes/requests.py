@@ -62,11 +62,15 @@ def create_request():
     db.session.add(new_request)
     db.session.flush() # To get new_request.id
     
+    from app.models.user import User
+    requester = User.query.get(current_user_id)
+    requester_name = requester.username if requester else "Someone"
+
     # Notify owner
     notif = Notification(
         user_id=resource.owner_id,
         type='NEW_REQUEST',
-        message=f"Someone wants to {resource.sharing_type.lower()} your '{resource.title}'.",
+        message=f"{requester_name} wants to {resource.sharing_type.lower()} your '{resource.title}'.",
         related_entity_id=new_request.id
     )
     db.session.add(notif)
