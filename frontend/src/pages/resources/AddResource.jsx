@@ -5,6 +5,7 @@ import api from '../../utils/api';
 import { MapPin, Image as ImageIcon, IndianRupee, Crosshair } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import toast from 'react-hot-toast';
 
 // Fix leaflet default marker icons issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -40,10 +41,17 @@ export default function AddResource() {
   const listingType = watch('listing_type');
 
   useEffect(() => {
+    const controller = new AbortController();
+    
     // Fetch categories
-    api.get('/resources/categories')
+    api.get('/resources/categories', { signal: controller.signal })
       .then(res => setCategories(res.data.categories))
-      .catch(err => console.error('Failed to load categories', err));
+      .catch(err => {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
+        console.error('Failed to load categories', err);
+      });
+      
+    return () => controller.abort();
   }, []);
 
   const fileInputRef = useRef(null);
@@ -65,10 +73,11 @@ export default function AddResource() {
         }
       });
       if (res.data.success) {
-        setImages([...images, res.data.url]);
+        setImages(prev => [...prev, res.data.url]);
       }
     } catch (err) {
-      alert("Failed to upload image. " + (err.response?.data?.message || ''));
+      toast.error("Failed to upload image. " + (err.response?.data?.message || ''));
+      console.error(err);
     } finally {
       setUploadingImage(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -78,7 +87,7 @@ export default function AddResource() {
   const handleGenerateDescription = async () => {
     const { title, category_id, condition } = getValues();
     if (!title || !category_id) {
-      alert("Please enter a title and select a category first!");
+      toast.error("Please enter a title and select a category first!");
       return;
     }
     
@@ -91,7 +100,8 @@ export default function AddResource() {
         setValue('description', res.data.description);
       }
     } catch (err) {
-      alert("Failed to generate description");
+      toast.error("Failed to generate description");
+      console.error(err);
     } finally {
       setGeneratingDesc(false);
     }
@@ -100,7 +110,7 @@ export default function AddResource() {
   const handleSuggestPrice = async () => {
     const { title, category_id, condition, listing_type } = getValues();
     if (!title || !category_id) {
-      alert("Please enter a title and select a category first!");
+      toast.error("Please enter a title and select a category first!");
       return;
     }
     
@@ -113,7 +123,8 @@ export default function AddResource() {
         setValue('price', res.data.suggested_price);
       }
     } catch (err) {
-      alert("Failed to suggest price");
+      toast.error("Failed to suggest price");
+      console.error(err);
     } finally {
       setSuggestingPrice(false);
     }
@@ -126,7 +137,7 @@ export default function AddResource() {
           setMapPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           setShowMap(true);
         },
-        (err) => alert("Could not get location")
+        (err) => toast.error("Could not get location")
       );
     }
   };

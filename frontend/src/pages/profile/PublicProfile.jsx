@@ -4,53 +4,70 @@ import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { UserCircle, Star, MapPin, Calendar, Flag, ShieldAlert } from 'lucide-react';
 import ConfirmModal from '../../components/ConfirmModal';
+import toast from 'react-hot-toast';
 
 export default function PublicProfile() {
   const { id } = useParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user } = useAuth(); // Ensure useAuth is imported if not already, wait, it's not imported. Let's add it.
+  const { user } = useAuth();
   
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState({});
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    api.get(`/users/${id}`)
+    const controller = new AbortController();
+    
+    api.get(`/users/${id}`, { signal: controller.signal })
       .then(res => {
         setProfile(res.data.profile);
         setLoading(false);
       })
       .catch(err => {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
         setError('Failed to load profile.');
         setLoading(false);
       });
+      
+    return () => controller.abort();
   }, [id]);
 
   const handleReport = async () => {
-    if (!user) return alert("Please login first.");
+    if (!user) return toast.error("Please login first.");
+    if (actionLoading) return;
     const reason = prompt("Why are you reporting this user?");
     if (!reason) return;
+    setActionLoading(true);
     try {
       await api.post(`/users/${id}/report`, { reason, description: "Reported from profile" });
-      alert("User has been reported to the moderation team.");
+      toast.success("User has been reported to the moderation team.");
     } catch (err) {
-      alert("Failed to report user.");
+      toast.error("Failed to report user.");
+      console.error(err);
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleBlockClick = () => {
-    if (!user) return alert("Please login first.");
+    if (!user) return toast.error("Please login first.");
+    if (actionLoading) return;
     setConfirmConfig({
       title: "Block User",
       message: "Are you sure you want to block this user? They won't be able to interact with you.",
       isDestructive: true,
       onConfirm: async () => {
+        setActionLoading(true);
         try {
           await api.post(`/users/${id}/block`);
-          alert("User has been blocked.");
+          toast.success("User has been blocked.");
         } catch (err) {
-          alert(err.response?.data?.message || "Failed to block user.");
+          toast.error(err.response?.data?.message || "Failed to block user.");
+          console.error(err);
+        } finally {
+          setActionLoading(false);
         }
       }
     });
@@ -125,10 +142,10 @@ export default function PublicProfile() {
           
           {user && user.id !== parseInt(id) && (
             <div className="flex flex-col gap-2">
-              <button onClick={handleReport} className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 rounded px-6 py-2 font-bold hover:bg-gray-50 shadow-sm transition-colors text-sm">
-                <Flag className="w-4 h-4" /> Report
+              <button disabled={actionLoading} onClick={handleReport} className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 rounded px-6 py-2 font-bold hover:bg-gray-50 shadow-sm transition-colors text-sm disabled:opacity-50">
+                <Flag className="w-4 h-4" /> {actionLoading ? 'Processing...' : 'Report'}
               </button>
-              <button onClick={handleBlockClick} className="flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 rounded px-6 py-2 font-bold hover:bg-red-50 shadow-sm transition-colors text-sm">
+              <button disabled={actionLoading} onClick={handleBlockClick} className="flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 rounded px-6 py-2 font-bold hover:bg-red-50 shadow-sm transition-colors text-sm disabled:opacity-50">
                 <ShieldAlert className="w-4 h-4" /> Block
               </button>
             </div>
@@ -148,8 +165,8 @@ export default function PublicProfile() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {profile.resources.map(resource => (
-                  <div key={resource.id} className="relative group/card">
-                    <Link to={`/resource/${resource.id}`} className="bg-white rounded border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex group h-full">
+                  <div key={resource.id} className="bg-white rounded border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
+                    <Link to={`/resource/${resource.id}`} className="flex group flex-1">
                       <div className="w-32 h-32 bg-gray-100 shrink-0 relative border-r border-gray-100">
                         <img src={resource.image_url} alt={resource.title} className={`w-full h-full object-cover transition-transform duration-200 ${resource.is_available ? 'group-hover:scale-105' : 'opacity-60 grayscale'}`} />
                         <div className="absolute top-1 left-1 bg-white/90 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm text-gray-800 uppercase">
@@ -161,7 +178,7 @@ export default function PublicProfile() {
                           </div>
                         )}
                       </div>
-                      <div className="p-3 flex flex-col flex-1 pb-10"> {/* Added pb-10 for button space */}
+                      <div className="p-3 flex flex-col flex-1">
                         <h3 className={`text-sm font-bold line-clamp-2 leading-tight mb-1 ${resource.is_available ? 'text-gray-900 group-hover:text-teal-700' : 'text-gray-500'}`}>
                           {resource.title}
                         </h3>
@@ -177,16 +194,18 @@ export default function PublicProfile() {
                     </Link>
                     
                     {user && user.id === parseInt(id) && (
-                      <button 
-                        onClick={(e) => handleToggleStatusClick(e, resource)}
-                        className={`absolute bottom-2 right-2 text-xs font-bold px-2 py-1 border rounded shadow-sm z-10 transition-colors ${
-                          resource.is_available 
-                            ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
-                            : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                        }`}
-                      >
-                        {resource.is_available ? 'Mark Unavailable' : 'Mark Available'}
-                      </button>
+                      <div className="p-2 bg-gray-50 border-t border-gray-200 flex justify-end">
+                        <button 
+                          onClick={(e) => handleToggleStatusClick(e, resource)}
+                          className={`text-xs font-bold px-3 py-1.5 border rounded shadow-sm transition-colors ${
+                            resource.is_available 
+                              ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
+                              : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                          }`}
+                        >
+                          {resource.is_available ? 'Mark Unavailable' : 'Mark Available'}
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}

@@ -96,23 +96,28 @@ def create_or_get_conversation():
     if current_user_id == owner_id:
         return jsonify({"success": False, "message": "Cannot chat with yourself"}), 400
         
+    p1 = min(current_user_id, owner_id)
+    p2 = max(current_user_id, owner_id)
+    
     # Check if conversation already exists
-    conv = Conversation.query.filter(
-        and_(Conversation.listing_id == listing_id,
-             or_(
-                 and_(Conversation.participant1_id == current_user_id, Conversation.participant2_id == owner_id),
-                 and_(Conversation.participant1_id == owner_id, Conversation.participant2_id == current_user_id)
-             ))
+    conv = Conversation.query.filter_by(
+        listing_id=listing_id,
+        participant1_id=p1,
+        participant2_id=p2
     ).first()
     
     if not conv:
         conv = Conversation(
             listing_id=listing_id,
-            participant1_id=current_user_id,
-            participant2_id=owner_id
+            participant1_id=p1,
+            participant2_id=p2
         )
         db.session.add(conv)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            conv = Conversation.query.filter_by(listing_id=listing_id, participant1_id=p1, participant2_id=p2).first()
         
     return jsonify({"success": True, "conversation_id": conv.id}), 200
 

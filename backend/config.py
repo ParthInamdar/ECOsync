@@ -17,6 +17,11 @@ class Config:
         if is_prod:
             raise ValueError("No JWT_SECRET_KEY set for Flask application in production")
         JWT_SECRET_KEY = 'jwt-dev-secret-key-change-in-prod'
+        
+    GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
+    if not GROQ_API_KEY:
+        if is_prod:
+            raise ValueError("No GROQ_API_KEY set for Flask application in production")
     
     # Database
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -34,7 +39,9 @@ class Config:
     
     # CORS Security
     FRONTEND_URL = os.environ.get('FRONTEND_URL')
-    if is_prod and FRONTEND_URL:
+    if is_prod:
+        if not FRONTEND_URL:
+            raise ValueError("No FRONTEND_URL set for CORS in production")
         CORS_ORIGINS = [FRONTEND_URL]
     else:
         CORS_ORIGINS = "*"

@@ -40,12 +40,11 @@ def create_request():
     if resource.owner_id == current_user_id:
         return jsonify({"success": False, "message": "You cannot request your own resource"}), 400
         
-    # Check if a pending request already exists
+    # Check if a pending or accepted request already exists
     existing_req = Request.query.filter_by(
         requester_id=current_user_id, 
-        resource_id=resource_id, 
-        status='PENDING'
-    ).first()
+        resource_id=resource_id
+    ).filter(Request.status.in_(['PENDING', 'ACCEPTED'])).first()
     
     if existing_req:
         return jsonify({"success": False, "message": "You already have a pending request for this item"}), 400
@@ -125,8 +124,13 @@ def get_my_requests():
     
     my_requests = Request.query.filter_by(requester_id=current_user_id).order_by(Request.created_at.desc()).all()
     
+    from app.models.review import Review
     result = []
     for req in my_requests:
+        has_reviewed = False
+        if req.transaction:
+            has_reviewed = Review.query.filter_by(transaction_id=req.transaction.id, reviewer_id=current_user_id).first() is not None
+            
         result.append({
             "id": req.id,
             "resource_id": req.resource_id,
@@ -136,6 +140,7 @@ def get_my_requests():
             "status": req.status,
             "message": req.message,
             "transaction_id": req.transaction.id if req.transaction else None,
+            "has_reviewed": has_reviewed,
             "created_at": req.created_at.isoformat()
         })
         
@@ -152,8 +157,13 @@ def get_incoming_requests():
     
     incoming = Request.query.filter(Request.resource_id.in_(my_resources_ids)).order_by(Request.created_at.desc()).all()
     
+    from app.models.review import Review
     result = []
     for req in incoming:
+        has_reviewed = False
+        if req.transaction:
+            has_reviewed = Review.query.filter_by(transaction_id=req.transaction.id, reviewer_id=current_user_id).first() is not None
+            
         result.append({
             "id": req.id,
             "resource_id": req.resource_id,
@@ -163,6 +173,7 @@ def get_incoming_requests():
             "status": req.status,
             "message": req.message,
             "transaction_id": req.transaction.id if req.transaction else None,
+            "has_reviewed": has_reviewed,
             "created_at": req.created_at.isoformat()
         })
         

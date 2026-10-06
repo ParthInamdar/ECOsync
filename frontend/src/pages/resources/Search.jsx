@@ -13,24 +13,36 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const CATEGORIES = [
-  'All Categories', 'Books', 'Electronics', 'Sports', 'Tools', 'Household', 'Vehicles', 'Fashion', 'Other'
-];
+import { SEARCH_CATEGORIES as CATEGORIES } from '../../utils/constants';
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters State
-  const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || 'All Categories');
-  const [listingType, setListingType] = useState(searchParams.get('listing_type') || '');
-  const [radius, setRadius] = useState(searchParams.get('radius') || '');
+  // Filters State from URL (Single Source of Truth)
+  const query = searchParams.get('q') || '';
+  let category = searchParams.get('category') || 'All Categories';
+  if (category && category !== 'All Categories') {
+    category = category.charAt(0).toUpperCase() + category.slice(1);
+  }
+  const listingType = searchParams.get('listing_type') || searchParams.get('sharing_type') || '';
+  const radius = searchParams.get('radius') || '';
+  
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'map'
+
+  const updateFilter = (key, value) => {
+    const params = new URLSearchParams(searchParams);
+    if (value && value !== 'All Categories') {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    setSearchParams(params);
+  };
 
   const requestLocation = () => {
     if (navigator.geolocation) {
@@ -42,7 +54,11 @@ export default function Search() {
         },
         (error) => {
           console.warn("Location not granted:", error);
-          setLocationError('Permission denied or unavailable.');
+          if (error.code === error.PERMISSION_DENIED) {
+            setLocationError('📍 Location permission required. Please enable it in your browser settings.');
+          } else {
+            setLocationError('Location unavailable.');
+          }
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
@@ -59,50 +75,35 @@ export default function Search() {
   // Fetch results whenever params change
   useEffect(() => {
     setLoading(true);
-    const q = searchParams.get('q') || '';
-    const cat = searchParams.get('category') || '';
-    const lt = searchParams.get('listing_type') || searchParams.get('sharing_type') || '';
-    const rad = searchParams.get('radius') || '';
-    
-    // update local state so UI is in sync
-    setQuery(q);
-    if(cat) setCategory(cat.charAt(0).toUpperCase() + cat.slice(1));
-    else setCategory('All Categories');
-    setListingType(lt);
-    setRadius(rad);
+    const controller = new AbortController();
 
     let url = `/resources/search?`;
-    if (q) url += `q=${encodeURIComponent(q)}&`;
-    if (cat && cat.toLowerCase() !== 'all categories') url += `category=${encodeURIComponent(cat)}&`;
-    if (lt) url += `listing_type=${encodeURIComponent(lt)}&`;
-    if (rad && userLocation) {
-      url += `radius=${encodeURIComponent(rad)}&`;
+    if (query) url += `q=${encodeURIComponent(query)}&`;
+    if (category && category.toLowerCase() !== 'all categories') url += `category=${encodeURIComponent(category)}&`;
+    if (listingType) url += `listing_type=${encodeURIComponent(listingType)}&`;
+    if (radius && userLocation) {
+      url += `radius=${encodeURIComponent(radius)}&`;
     }
     // Always attach user location if available so backend can sort/calculate distance
     if (userLocation) {
       url += `lat=${userLocation.lat}&lon=${userLocation.lon}&`;
     }
 
-    api.get(url)
+    api.get(url, { signal: controller.signal })
       .then(res => {
         setResources(res.data.resources);
         setLoading(false);
       })
       .catch(err => {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+          return; // Request was cancelled
+        }
         console.error("Failed to search resources", err);
         setLoading(false);
       });
-  }, [searchParams, userLocation]);
-
-  const applyFilters = () => {
-    const params = new URLSearchParams();
-    if (query) params.set('q', query);
-    if (category && category !== 'All Categories') params.set('category', category.toLowerCase());
-    if (listingType) params.set('listing_type', listingType);
-    if (radius) params.set('radius', radius);
-    setSearchParams(params);
-    setIsFilterOpen(false);
-  };
+      
+    return () => controller.abort();
+  }, [query, category, listingType, radius, userLocation]);
 
   return (
     <div className="min-h-screen bg-[#f2f4f5] py-8">
@@ -156,7 +157,7 @@ export default function Search() {
                         type="radio" 
                         name="category"
                         checked={category === cat}
-                        onChange={() => setCategory(cat)}
+                        onChange={() => updateFilter('category', cat)}
                         className="text-teal-600 focus:ring-teal-500" 
                       />
                       <span className="text-sm text-gray-700">{cat}</span>
@@ -176,7 +177,7 @@ export default function Search() {
                       type="radio" 
                       name="listing"
                       checked={listingType === ''}
-                      onChange={() => setListingType('')}
+                      onChange={() => updateFilter('listing_type', '')}
                       className="text-teal-600 focus:ring-teal-500" 
                     />
                     <span className="text-sm text-gray-700">Any</span>
@@ -187,7 +188,7 @@ export default function Search() {
                         type="radio" 
                         name="listing"
                         checked={listingType === type}
-                        onChange={() => setListingType(type)}
+                        onChange={() => updateFilter('listing_type', type)}
                         className="text-teal-600 focus:ring-teal-500" 
                       />
                       <span className="text-sm text-gray-700">{type}</span>
@@ -215,7 +216,7 @@ export default function Search() {
                       type="radio" 
                       name="radius"
                       checked={radius === ''}
-                      onChange={() => setRadius('')}
+                      onChange={() => updateFilter('radius', '')}
                       disabled={!userLocation}
                       className="text-teal-600 focus:ring-teal-500 disabled:opacity-50" 
                     />
@@ -227,7 +228,7 @@ export default function Search() {
                         type="radio" 
                         name="radius"
                         checked={radius === String(rad)}
-                        onChange={() => setRadius(String(rad))}
+                        onChange={() => updateFilter('radius', String(rad))}
                         disabled={!userLocation}
                         className="text-teal-600 focus:ring-teal-500 disabled:opacity-50" 
                       />
@@ -237,12 +238,7 @@ export default function Search() {
                 </div>
               </div>
 
-              <button 
-                onClick={applyFilters}
-                className="w-full bg-teal-600 text-white font-bold rounded py-2 hover:bg-teal-700 transition-colors"
-              >
-                Apply Filters
-              </button>
+              {/* Apply button is no longer needed since filters apply automatically */}
             </div>
           </div>
 
@@ -311,11 +307,7 @@ export default function Search() {
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <div className="flex items-center gap-1 text-amber-500 font-medium">
-                            <Star className="w-3.5 h-3.5 fill-current" />
-                            <span>4.8</span>
-                          </div>
+                        <div className="flex items-center justify-end text-xs text-gray-500">
                           <span className="uppercase">{new Date(resource.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>

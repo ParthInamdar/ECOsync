@@ -13,18 +13,21 @@ def get_transactions():
     current_user_id = int(get_jwt_identity())
     
     from sqlalchemy import or_
+    from app.models.review import Review
     transactions = Transaction.query.filter(
         or_(Transaction.lender_id == current_user_id, Transaction.borrower_id == current_user_id)
     ).order_by(Transaction.created_at.desc()).all()
     
     result = []
     for t in transactions:
+        has_reviewed = Review.query.filter_by(transaction_id=t.id, reviewer_id=current_user_id).first() is not None
         result.append({
             "id": t.id,
             "resource_id": t.request.resource_id,
             "resource_title": t.request.resource.title,
             "lender_id": t.lender_id,
             "borrower_id": t.borrower_id,
+            "has_reviewed": has_reviewed,
             "status": t.status,
             "start_date": t.start_date.isoformat() if t.start_date else None,
             "expected_return_date": t.expected_return_date.isoformat() if t.expected_return_date else None,

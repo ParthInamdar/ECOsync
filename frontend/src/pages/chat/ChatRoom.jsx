@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { Send, ArrowLeft, IndianRupee } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ChatRoom() {
   const { id } = useParams();
@@ -14,8 +15,11 @@ export default function ChatRoom() {
   const [loading, setLoading] = useState(true);
   
   const messagesEndRef = useRef(null);
+  const isSendingRef = useRef(false);
 
   const fetchMessages = () => {
+    if (isSendingRef.current) return;
+    
     api.get(`/chat/${id}`)
       .then(res => {
         setMessages(res.data.messages);
@@ -24,6 +28,7 @@ export default function ChatRoom() {
         setLoading(false);
       })
       .catch(err => {
+        if (loading) toast.error("Failed to load chat");
         console.error("Failed to load chat", err);
         setLoading(false);
       });
@@ -47,11 +52,26 @@ export default function ChatRoom() {
     const text = inputText;
     setInputText('');
     
+    // Optimistically add message to UI
+    const optimisticMsg = {
+      id: `temp-${Date.now()}`,
+      sender_id: user.id,
+      text: text,
+      is_read: false,
+      created_at: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+    
+    isSendingRef.current = true;
     try {
       await api.post(`/chat/${id}/message`, { text });
-      fetchMessages(); // refresh instantly
+      isSendingRef.current = false;
+      fetchMessages(); // refresh to get real ID and exact timestamp
     } catch (err) {
+      toast.error("Failed to send message");
       console.error("Failed to send", err);
+      isSendingRef.current = false;
+      fetchMessages(); // Rollback to actual state
     }
   };
 

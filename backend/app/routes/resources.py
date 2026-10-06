@@ -8,6 +8,7 @@ from app.models.transaction import Transaction
 from app.models.request import Request
 from flask_jwt_extended import verify_jwt_in_request
 from app.utils.geo import haversine
+from app.models.review import Review
 
 resources_bp = Blueprint('resources', __name__)
 
@@ -131,6 +132,23 @@ def get_resource(resource_id):
         # Approximate to ~1.1km by rounding to 2 decimal places
         safe_lat = round(safe_lat, 2)
         safe_lon = round(safe_lon, 2)
+        
+    # Owner Rating
+    transactions = Transaction.query.filter((Transaction.lender_id == r.owner_id) | (Transaction.borrower_id == r.owner_id)).all()
+    transaction_ids = [t.id for t in transactions]
+    reviews = Review.query.filter(Review.transaction_id.in_(transaction_ids), Review.reviewer_id != r.owner_id).all()
+    
+    total_rating = sum([rev.rating for rev in reviews])
+    avg_rating = round(total_rating / len(reviews), 1) if reviews else 0.0
+    
+    # Request Status
+    has_requested = False
+    if current_user_id and not is_owner:
+        existing_request = Request.query.filter_by(
+            resource_id=resource_id, 
+            requester_id=current_user_id
+        ).filter(Request.status.in_(['PENDING', 'ACCEPTED'])).first()
+        has_requested = bool(existing_request)
     
     return jsonify({
         "success": True,
@@ -155,6 +173,10 @@ def get_resource(resource_id):
             "images": [img.image_url for img in r.images],
             "owner_id": r.owner_id,
             "owner_name": r.owner.username, # Assumes backref exists
+            "owner_rating": avg_rating,
+            "owner_reviews": len(reviews),
+            "owner_member_since": r.owner.created_at.year if r.owner.created_at else 2026,
+            "has_requested": has_requested,
             "created_at": r.created_at.isoformat()
         }
     }), 200

@@ -6,6 +6,7 @@ import { MapPin, Star, UserCircle, AlertCircle, X } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import ConfirmModal from '../../components/ConfirmModal';
 import L from 'leaflet';
+import toast from 'react-hot-toast';
 
 // Fix leaflet default marker icons issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -24,6 +25,8 @@ export default function ResourceDetails() {
   const [error, setError] = useState('');
   const [isSaved, setIsSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
   
   // Request Modal State
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -41,47 +44,64 @@ export default function ResourceDetails() {
   const [confirmConfig, setConfirmConfig] = useState({});
 
   useEffect(() => {
-    api.get(`/resources/${id}`)
+    const controller = new AbortController();
+
+    api.get(`/resources/${id}`, { signal: controller.signal })
       .then(res => {
         setResource(res.data.resource);
+        setSelectedImage(res.data.resource.image_url);
         setLoading(false);
       })
       .catch(err => {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
         setError('Failed to load resource details.');
         setLoading(false);
       });
       
-    api.get(`/resources/${id}/availability`)
+    api.get(`/resources/${id}/availability`, { signal: controller.signal })
       .then(res => {
         if(res.data.success) {
           setBookedDates(res.data.booked_dates);
         }
       })
-      .catch(err => console.error("Failed to load availability", err));
+      .catch(err => {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
+        console.error("Failed to load availability", err);
+      });
       
     if (user && id) {
-      api.get(`/users/saved/${id}/check`)
+      api.get(`/users/saved/${id}/check`, { signal: controller.signal })
         .then(res => {
           if(res.data.success) {
             setIsSaved(res.data.is_saved);
           }
         })
-        .catch(err => console.error("Failed to check saved status", err));
+        .catch(err => {
+          if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
+          console.error("Failed to check saved status", err);
+        });
     }
+
+    return () => controller.abort();
   }, [id, user]);
 
   const handleChatStart = async () => {
     if (!user) {
-      alert("Please login first!");
+      toast.error("Please login first!");
       return;
     }
+    if (chatLoading) return;
+    setChatLoading(true);
     try {
       const res = await api.post('/chat/', { listing_id: resource.id });
       if (res.data.success) {
         navigate(`/messages/${res.data.conversation_id}`);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to open chat.");
+      toast.error(err.response?.data?.message || "Failed to open chat.");
+      console.error(err);
+    } finally {
+      setChatLoading(false);
     }
   };
 
@@ -132,6 +152,11 @@ export default function ResourceDetails() {
       });
       if(res.data.success) {
         setRequestStatus('success');
+        setResource(prev => ({ ...prev, has_requested: true }));
+        setTimeout(() => {
+          setShowRequestModal(false);
+          setRequestStatus('');
+        }, 2000);
       }
     } catch (err) {
       setRequestStatus('error');
@@ -141,7 +166,7 @@ export default function ResourceDetails() {
 
   const handleSave = async () => {
     if (!user) {
-      alert("Please login first to save items!");
+      toast.error("Please login first to save items!");
       return;
     }
     setSaveLoading(true);
@@ -149,9 +174,11 @@ export default function ResourceDetails() {
       const res = await api.post(`/users/saved/${resource.id}`);
       if (res.data.success) {
         setIsSaved(res.data.is_saved);
+        toast.success(res.data.message);
       }
     } catch (err) {
-      alert("Failed to save resource");
+      toast.error("Failed to save resource");
+      console.error(err);
     } finally {
       setSaveLoading(false);
     }
@@ -181,15 +208,36 @@ export default function ResourceDetails() {
             {/* Image Gallery */}
             <div className="bg-white rounded border border-gray-200 overflow-hidden shadow-sm">
               <div className="aspect-[4/3] sm:aspect-video bg-black flex items-center justify-center relative">
-                <img src={resource.image_url} alt={resource.title} className="max-h-full max-w-full object-contain" />
+                <img 
+                  src={selectedImage || "https://placehold.co/800x600/e2e8f0/64748b?text=No+Image"} 
+                  alt={resource.title} 
+                  className="max-h-full max-w-full object-contain" 
+                  onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/800x600/e2e8f0/64748b?text=Error+Loading+Image"; }}
+                />
                 <div className="absolute top-4 left-4 bg-teal-500 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
                   {resource.listing_type || resource.sharing_type.toUpperCase()}
                 </div>
               </div>
               {resource.images && resource.images.length > 0 && (
                 <div className="flex gap-2 p-2 overflow-x-auto bg-gray-50 border-t border-gray-200">
+                  <img 
+                    src={resource.image_url} 
+                    alt="Gallery Main" 
+                    onClick={() => setSelectedImage(resource.image_url)}
+                    className={`w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80 border-2 ${selectedImage === resource.image_url ? 'border-teal-500' : 'border-transparent'}`}
+                    onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/e2e8f0/64748b?text=Error"; }}
+                  />
                   {resource.images.map((img, idx) => (
-                    <img key={idx} src={img} alt="Gallery" className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80" />
+                    img !== resource.image_url && (
+                      <img 
+                        key={idx} 
+                        src={img} 
+                        alt="Gallery" 
+                        onClick={() => setSelectedImage(img)}
+                        className={`w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80 border-2 ${selectedImage === img ? 'border-teal-500' : 'border-transparent'}`}
+                        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/e2e8f0/64748b?text=Error"; }}
+                      />
+                    )
                   ))}
                 </div>
               )}
@@ -288,15 +336,17 @@ export default function ResourceDetails() {
                       if(!user) alert("Please login first!"); 
                       else setShowRequestModal(true);
                     }}
-                    className="w-full bg-teal-600 text-white rounded py-3 font-bold text-lg hover:bg-teal-700 transition-colors shadow-sm"
+                    disabled={resource.has_requested}
+                    className={`w-full text-white rounded py-3 font-bold text-lg transition-colors shadow-sm ${resource.has_requested ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'}`}
                   >
-                    Request to {resource.listing_type || resource.sharing_type}
+                    {resource.has_requested ? 'Requested' : `Request to ${resource.listing_type || resource.sharing_type}`}
                   </button>
                   <button 
                     onClick={handleChatStart}
-                    className="w-full bg-white text-teal-600 border border-teal-600 rounded py-3 font-bold text-lg hover:bg-teal-50 transition-colors shadow-sm"
+                    disabled={chatLoading}
+                    className="w-full bg-white text-teal-600 border border-teal-600 rounded py-3 font-bold text-lg hover:bg-teal-50 transition-colors shadow-sm disabled:opacity-50"
                   >
-                    Chat with Owner
+                    {chatLoading ? 'Creating chat...' : 'Chat with Owner'}
                   </button>
                 </div>
               ) : (
@@ -310,7 +360,7 @@ export default function ResourceDetails() {
                 disabled={saveLoading}
                 className="w-full bg-white text-teal-700 border-2 border-teal-600 rounded py-2.5 font-bold hover:bg-teal-50 transition-colors"
               >
-                {saveLoading ? 'Updating...' : isSaved ? 'Saved (Click to unsave)' : 'Save for later'}
+                {saveLoading ? 'Saving...' : isSaved ? 'Saved (Click to unsave)' : 'Save for later'}
               </button>
             </div>
 
@@ -324,9 +374,10 @@ export default function ResourceDetails() {
                   <h4 className="font-bold text-gray-900 text-lg">{resource.owner_name}</h4>
                   <div className="flex items-center gap-1 text-sm text-gray-600 mt-0.5">
                     <span className="bg-amber-100 text-amber-800 px-1.5 rounded text-xs font-bold flex items-center gap-0.5">
-                      <Star className="w-3 h-3 fill-current" /> 4.8
+                      <Star className="w-3 h-3 fill-current" /> {resource.owner_rating || 0}
                     </span>
-                    <span>· Member since 2026</span>
+                    <span className="ml-1 text-xs text-gray-500">({resource.owner_reviews || 0} reviews)</span>
+                    <span>· Member since {resource.owner_member_since || 2026}</span>
                   </div>
                 </div>
               </div>
@@ -375,7 +426,7 @@ export default function ResourceDetails() {
                 <>
                   {requestError && <div className="mb-4 bg-red-50 text-red-600 p-3 rounded text-sm border border-red-200">{requestError}</div>}
                   <div className="flex gap-4 items-center mb-6 bg-gray-50 p-3 rounded border border-gray-200">
-                    <img src={resource.image_url} alt="" className="w-12 h-12 rounded object-cover" />
+                    <img src={resource.image_url} alt="" className="w-12 h-12 rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/e2e8f0/64748b?text=Error"; }} />
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{resource.title}</p>
                       <p className="text-xs text-gray-500">Owner: {resource.owner_name}</p>

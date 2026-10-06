@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { Link } from 'react-router-dom';
 import { Star, X } from 'lucide-react';
+import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 export default function MyRequests() {
   const [activeTab, setActiveTab] = useState('incoming'); // 'incoming' or 'outgoing'
@@ -15,6 +17,12 @@ export default function MyRequests() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  
+  // Status Update & Confirmation State
+  const [updatingId, setUpdatingId] = useState(null);
+  const [updatingAction, setUpdatingAction] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({});
 
   useEffect(() => {
     fetchRequests();
@@ -36,13 +44,46 @@ export default function MyRequests() {
     }
   };
 
-  const handleUpdateStatus = async (requestId, newStatus) => {
+  const executeStatusUpdate = async (requestId, newStatus) => {
+    setUpdatingId(requestId);
+    setUpdatingAction(newStatus);
     try {
       await api.patch(`/requests/${requestId}`, { status: newStatus });
-      fetchRequests(); // Refresh data
+      await fetchRequests(); // Refresh data
+      toast.success("Request updated");
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update request');
+      toast.error(err.response?.data?.message || 'Failed to update request');
+    } finally {
+      setUpdatingId(null);
+      setUpdatingAction(null);
     }
+  };
+
+  const handleUpdateStatusClick = (requestId, newStatus) => {
+    let title = "";
+    let message = "";
+    let isDestructive = false;
+    
+    if (newStatus === 'ACCEPTED') {
+      title = "Approve Request";
+      message = "Are you sure you want to approve this request?";
+    } else if (newStatus === 'REJECTED') {
+      title = "Decline Request";
+      message = "Are you sure you want to decline this request?";
+      isDestructive = true;
+    } else if (newStatus === 'CANCELLED') {
+      title = "Cancel Request";
+      message = "Are you sure you want to cancel your request?";
+      isDestructive = true;
+    }
+
+    setConfirmConfig({
+      title,
+      message,
+      isDestructive,
+      onConfirm: () => executeStatusUpdate(requestId, newStatus)
+    });
+    setShowConfirm(true);
   };
 
   const submitReview = async () => {
@@ -53,11 +94,11 @@ export default function MyRequests() {
         rating: reviewRating,
         comment: reviewComment
       });
-      alert('Review submitted successfully!');
+      toast.success('Review submitted successfully!');
       setReviewModalOpen(false);
       fetchRequests();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to submit review');
+      toast.error(err.response?.data?.message || 'Failed to submit review');
     } finally {
       setReviewSubmitting(false);
     }
@@ -140,16 +181,18 @@ export default function MyRequests() {
                         {req.status === 'PENDING' && (
                           <div className="flex flex-col gap-2 shrink-0">
                             <button 
-                              onClick={() => handleUpdateStatus(req.id, 'ACCEPTED')}
-                              className="bg-teal-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-teal-700"
+                              onClick={() => handleUpdateStatusClick(req.id, 'ACCEPTED')}
+                              disabled={updatingId === req.id}
+                              className="bg-teal-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-teal-700 disabled:opacity-50"
                             >
-                              Approve
+                              {updatingId === req.id && updatingAction === 'ACCEPTED' ? 'Approving...' : 'Approve'}
                             </button>
                             <button 
-                              onClick={() => handleUpdateStatus(req.id, 'REJECTED')}
-                              className="bg-white border border-red-200 text-red-600 px-4 py-2 rounded text-sm font-bold hover:bg-red-50"
+                              onClick={() => handleUpdateStatusClick(req.id, 'REJECTED')}
+                              disabled={updatingId === req.id}
+                              className="bg-white border border-red-200 text-red-600 px-4 py-2 rounded text-sm font-bold hover:bg-red-50 disabled:opacity-50"
                             >
-                              Decline
+                              {updatingId === req.id && updatingAction === 'REJECTED' ? 'Declining...' : 'Decline'}
                             </button>
                           </div>
                         )}
@@ -157,9 +200,11 @@ export default function MyRequests() {
                         {req.status === 'ACCEPTED' && req.transaction_id && (
                           <div className="flex flex-col gap-2 items-end shrink-0">
                             <p className="text-sm font-bold text-green-600">Approved</p>
-                            <button onClick={() => openReviewModal(req.transaction_id)} className="text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-3 py-1.5 rounded">
-                              Leave Review
-                            </button>
+                            {!req.has_reviewed && (
+                              <button onClick={() => openReviewModal(req.transaction_id)} className="text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-3 py-1.5 rounded">
+                                Leave Review
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -193,8 +238,8 @@ export default function MyRequests() {
                           {req.status === 'ACCEPTED' && (
                             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded flex justify-between items-center">
                               <p className="text-sm text-green-800 font-medium">Your request was approved! Arrange pickup.</p>
-                              {req.transaction_id && (
-                                <button onClick={() => openReviewModal(req.transaction_id)} className="text-sm bg-white border border-green-300 text-green-700 hover:bg-green-100 font-bold px-3 py-1.5 rounded">
+                              {req.transaction_id && !req.has_reviewed && (
+                                <button onClick={() => openReviewModal(req.transaction_id)} className="text-sm bg-white border border-green-300 text-green-700 hover:bg-green-100 font-bold px-3 py-1.5 rounded shrink-0 ml-4">
                                   Leave Review
                                 </button>
                               )}
@@ -203,10 +248,11 @@ export default function MyRequests() {
                           
                           {req.status === 'PENDING' && (
                             <button 
-                              onClick={() => handleUpdateStatus(req.id, 'CANCELLED')}
-                              className="mt-3 text-sm text-red-600 hover:underline font-medium"
+                              onClick={() => handleUpdateStatusClick(req.id, 'CANCELLED')}
+                              disabled={updatingId === req.id}
+                              className="mt-3 text-sm text-red-600 hover:underline font-medium disabled:opacity-50 disabled:no-underline"
                             >
-                              Cancel Request
+                              {updatingId === req.id && updatingAction === 'CANCELLED' ? 'Cancelling...' : 'Cancel Request'}
                             </button>
                           )}
                         </div>
@@ -269,6 +315,11 @@ export default function MyRequests() {
         </div>
       )}
 
+      <ConfirmModal 
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        {...confirmConfig}
+      />
     </div>
   );
 }

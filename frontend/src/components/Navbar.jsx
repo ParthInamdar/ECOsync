@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Search, MapPin, Plus, UserCircle, Bell, MessageSquare } from 'lucide-react';
 import api from '../utils/api';
@@ -11,6 +11,7 @@ export default function Navbar() {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const navigate = useNavigate();
 
   const [userLocation, setUserLocation] = useState("India");
 
@@ -102,7 +103,7 @@ export default function Navbar() {
                 e.preventDefault();
                 const fd = new FormData(e.target);
                 const query = fd.get('q');
-                if (query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
               }}
               className="flex w-full border-2 border-gray-800 rounded bg-white overflow-hidden"
             >
@@ -192,7 +193,7 @@ export default function Navbar() {
                         <Link to="/admin" className="block px-5 py-2 text-[14px] text-red-600 font-bold hover:text-red-700 hover:bg-red-50">Admin Dashboard</Link>
                       )}
                       <Link to={user ? `/profile/${user.id}` : "/login"} className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Profile</Link>
-                      <Link to={user ? `/profile/${user.id}` : "/login"} className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Resources</Link>
+                      <Link to={user ? `/profile/${user.id}` : "/login"} className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Listings</Link>
                       <Link to="/requests" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">My Requests</Link>
                       <a href="mailto:parth020716@gmail.com" className="block px-5 py-2 text-[14px] text-gray-600 hover:text-black hover:font-medium">Contact Us</a>
                     </div>
@@ -219,16 +220,25 @@ export default function Navbar() {
       
       {/* Mobile Search - Visible only on small screens */}
       <div className="md:hidden px-4 py-3 border-t border-gray-100 bg-white">
-        <div className="flex w-full border-2 border-gray-300 rounded focus-within:border-teal-600 bg-white overflow-hidden">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const query = fd.get('q');
+            if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
+          }}
+          className="flex w-full border-2 border-gray-300 rounded focus-within:border-teal-600 bg-white overflow-hidden"
+        >
           <input 
+            name="q"
             type="text" 
             placeholder="Search for resources..." 
             className="w-full bg-transparent py-2 px-3 text-sm text-gray-900 outline-none"
           />
-          <button className="bg-teal-600 px-4 flex items-center justify-center">
+          <button type="submit" className="bg-teal-600 px-4 flex items-center justify-center">
             <Search className="w-4 h-4 text-white" />
           </button>
-        </div>
+        </form>
       </div>
     </nav>
   );

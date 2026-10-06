@@ -39,11 +39,32 @@ def upload_image():
         os.makedirs(upload_folder, exist_ok=True)
         
         file_path = os.path.join(upload_folder, unique_filename)
-        file.save(file_path)
         
-        # Use environment variable or dynamic host URL for the uploaded file link
-        base_url = os.environ.get('PUBLIC_API_URL', request.host_url.rstrip('/'))
-        file_url = f"{base_url}/static/uploads/{unique_filename}"
+        is_prod = os.environ.get('FLASK_ENV') == 'production' or os.environ.get('RENDER') == 'true'
+        
+        if is_prod:
+            # Use Cloudinary in production
+            import cloudinary
+            import cloudinary.uploader
+            
+            cloudinary.config(
+                cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+                api_key=os.environ.get('CLOUDINARY_API_KEY'),
+                api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+            )
+            
+            # File object is at EOF from size check, seek to 0 again just in case
+            file.seek(0)
+            result = cloudinary.uploader.upload(file)
+            file_url = result.get('secure_url')
+        else:
+            # Use local filesystem in development
+            file.seek(0)
+            file.save(file_path)
+            
+            # Use environment variable or dynamic host URL for the uploaded file link
+            base_url = os.environ.get('PUBLIC_API_URL', request.host_url.rstrip('/'))
+            file_url = f"{base_url}/static/uploads/{unique_filename}"
         
         return jsonify({
             "success": True,

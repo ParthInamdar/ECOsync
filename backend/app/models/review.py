@@ -1,8 +1,12 @@
 from app.extensions import db
 from datetime import datetime
+from sqlalchemy import UniqueConstraint
 
 class Review(db.Model):
     __tablename__ = 'reviews'
+    __table_args__ = (
+        UniqueConstraint('transaction_id', 'reviewer_id', name='uq_transaction_reviewer'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     transaction_id = db.Column(db.Integer, db.ForeignKey('transactions.id'), nullable=False)

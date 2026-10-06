@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Login from './pages/auth/Login';
@@ -11,6 +12,7 @@ import AddResource from './pages/resources/AddResource';
 import ResourceDetails from './pages/resources/ResourceDetails';
 import MyRequests from './pages/profile/MyRequests';
 import PublicProfile from './pages/profile/PublicProfile';
+import SavedResources from './pages/profile/SavedResources';
 import MyImpact from './pages/profile/MyImpact';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Inbox from './pages/chat/Inbox';
@@ -60,6 +62,12 @@ const Layout = () => {
             </ProtectedRoute>
           } />
           
+          <Route path="/saved" element={
+            <ProtectedRoute>
+              <SavedResources />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminDashboard />
@@ -95,6 +103,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Layout />
+        <Toaster position="bottom-right" />
       </Router>
     </AuthProvider>
   );

@@ -79,7 +79,7 @@ export default function Footer() {
             <div>
               <h3 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">Support</h3>
               <ul className="space-y-2">
-                <li><Link to="#" className="text-sm text-gray-400 hover:text-white transition-colors">Help Center</Link></li>
+                <li><button onClick={() => setShowIssueBot(true)} className="text-sm text-gray-400 hover:text-white transition-colors">Help Center</button></li>
                 <li><a href="mailto:parth020716@gmail.com" className="text-sm text-gray-400 hover:text-white transition-colors">Contact</a></li>
                 <li><button onClick={() => setShowIssueBot(true)} className="text-sm text-gray-400 hover:text-white transition-colors">Report Issue</button></li>
               </ul>

@@ -1,15 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Star, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../utils/api';
 
-const CATEGORIES = [
-  'Books', 'Electronics', 'Sports', 'Tools', 'Household', 'Vehicles', 'Fashion', 'Other'
-];
+import { CATEGORY_DISPLAY } from '../utils/constants';
 
 export default function Home() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [resources, setResources] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,12 +34,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-    api.get('/resources/')
+    const controller = new AbortController();
+
+    api.get('/resources/', { signal: controller.signal })
       .then(res => {
         setResources(res.data.resources);
         setLoading(false);
       })
       .catch(err => {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
         console.error("Failed to load resources", err);
         setLoading(false);
       });
@@ -53,7 +55,7 @@ export default function Home() {
         if (lat && lon) {
           url += `?lat=${lat}&lon=${lon}`;
         }
-        api.get(url)
+        api.get(url, { signal: controller.signal })
           .then(res => {
             if (res.data.success && res.data.recommendations.length > 0) {
               setRecommendations(res.data.recommendations);
@@ -61,6 +63,7 @@ export default function Home() {
             setRecLoading(false);
           })
           .catch(err => {
+            if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
             console.error("AI Recommendations not available.");
             setRecLoading(false);
           });
@@ -81,6 +84,8 @@ export default function Home() {
         fetchRecommendations(null, null);
       }
     }
+    
+    return () => controller.abort();
   }, [user]);
 
   return (
@@ -101,18 +106,7 @@ export default function Home() {
             ref={scrollRef}
             className="flex overflow-x-auto gap-8 hide-scrollbar scroll-smooth py-2 px-2"
           >
-            {[
-              { name: 'Books & Study', img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=60&w=200&h=200', param: 'Books' },
-              { name: 'Tools & Equipment', img: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&q=60&w=200&h=200', param: 'Tools' },
-              { name: 'Electronics', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=60&w=200&h=200', param: 'Electronics' },
-              { name: 'Sports & Fitness', img: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=60&w=200&h=200', param: 'Sports' },
-              { name: 'Outdoor & Travel', img: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&q=60&w=200&h=200', param: 'Outdoor' },
-              { name: 'Household', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=60&w=200&h=200', param: 'Household' },
-              { name: 'Hobbies & Creative', img: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=60&w=200&h=200', param: 'Hobbies' },
-              { name: 'Games & Entertainment', img: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=60&w=200&h=200', param: 'Games' },
-              { name: 'Mobility', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=60&w=200&h=200', param: 'Mobility' },
-              { name: 'Other', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=60&w=200&h=200', param: 'Other' },
-            ].map((cat) => (
+            {CATEGORY_DISPLAY.map((cat) => (
               <Link key={cat.name} to={`/search?category=${encodeURIComponent(cat.param)}`} className="flex flex-col items-center gap-2 group flex-shrink-0 w-[110px]">
                 <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full hover:shadow-md transition-shadow overflow-hidden border-4 border-white shadow-sm">
                   <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
@@ -148,9 +142,27 @@ export default function Home() {
             {resources.map(resource => (
               <Link key={resource.id} to={`/resource/${resource.id}`} className="bg-white rounded border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full group relative">
                 {/* Save Icon */}
-                <div className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-sm hover:bg-white text-gray-400 hover:text-red-500 transition-colors">
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!user) {
+                      navigate('/login');
+                      return;
+                    }
+                    api.post(`/users/saved/${resource.id}`)
+                      .then(res => {
+                        if(res.data.success) {
+                          // Change color locally or alert
+                          alert(res.data.message);
+                        }
+                      })
+                      .catch(err => console.error(err));
+                  }}
+                  className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-sm hover:bg-white text-gray-400 hover:text-red-500 transition-colors"
+                >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                </div>
+                </button>
                 
                 {/* Image Section */}
                 <div className="relative aspect-[4/3] w-full bg-gray-50 overflow-hidden border-b border-gray-100 flex items-center justify-center">
