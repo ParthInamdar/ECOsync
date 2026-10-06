@@ -187,6 +187,16 @@ export default function ResourceDetails() {
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (error || !resource) return <div className="min-h-screen flex items-center justify-center text-red-500">{error || 'Resource not found'}</div>;
 
+  const getActionWord = (type) => {
+    const t = (type || '').toUpperCase();
+    if (t === 'SELL') return 'BUY';
+    if (t === 'DONATE' || t === 'FREE') return 'BORROW';
+    if (t === 'BORROW') return 'LEND';
+    if (t === 'RENT') return 'RENT';
+    return t || 'REQUEST';
+  };
+  const actionWord = getActionWord(resource.listing_type || resource.sharing_type);
+
   return (
     <div className="min-h-screen bg-[#f2f4f5] py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -333,13 +343,13 @@ export default function ResourceDetails() {
                 <div className="flex flex-col gap-3 mb-3">
                   <button 
                     onClick={() => {
-                      if(!user) alert("Please login first!"); 
+                      if(!user) toast.error("Please login first!"); 
                       else setShowRequestModal(true);
                     }}
-                    disabled={resource.has_requested}
+                    disabled={resource.has_requested || actionLoading}
                     className={`w-full text-white rounded py-3 font-bold text-lg transition-colors shadow-sm ${resource.has_requested ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'}`}
                   >
-                    {resource.has_requested ? 'Requested' : `Request to ${resource.listing_type || resource.sharing_type}`}
+                    {resource.has_requested ? 'Requested' : `Request to ${actionWord}`}
                   </button>
                   <button 
                     onClick={handleChatStart}
@@ -406,7 +416,7 @@ export default function ResourceDetails() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-4 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900">Request to {resource.listing_type || resource.sharing_type}</h3>
+              <h3 className="text-lg font-bold text-gray-900">Request to {actionWord}</h3>
               <button onClick={() => {setShowRequestModal(false); setRequestStatus('');}} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
@@ -433,7 +443,7 @@ export default function ResourceDetails() {
                     </div>
                   </div>
                   
-                  {(resource.listing_type === 'RENT' || resource.listing_type === 'BORROW' || resource.sharing_type === 'Borrow') && (
+                  {(actionWord === 'BORROW' || actionWord === 'RENT') && (
                     <div className="mb-4">
                       {bookedDates.length > 0 && (
                         <div className="mb-3 text-sm text-amber-800 bg-amber-50 p-2 rounded border border-amber-200">
