@@ -75,6 +75,40 @@ def create_request():
     )
     db.session.add(notif)
     
+    # Add automated chat message
+    from app.models.conversation import Conversation
+    from app.models.message import Message
+    from sqlalchemy import and_, or_
+    
+    conv = Conversation.query.filter(
+        and_(Conversation.listing_id == resource_id,
+             or_(
+                 and_(Conversation.participant1_id == current_user_id, Conversation.participant2_id == resource.owner_id),
+                 and_(Conversation.participant1_id == resource.owner_id, Conversation.participant2_id == current_user_id)
+             ))
+    ).first()
+    
+    if not conv:
+        conv = Conversation(
+            listing_id=resource_id,
+            participant1_id=current_user_id,
+            participant2_id=resource.owner_id
+        )
+        db.session.add(conv)
+        db.session.flush()
+        
+    msg_text = f"Hi, I would like to {resource.sharing_type.lower()} your '{resource.title}'."
+    if message:
+        msg_text += f" {message}"
+        
+    auto_msg = Message(
+        conversation_id=conv.id,
+        sender_id=current_user_id,
+        message_text=msg_text
+    )
+    db.session.add(auto_msg)
+    conv.updated_at = db.func.current_timestamp()
+    
     db.session.commit()
     
     return jsonify({
