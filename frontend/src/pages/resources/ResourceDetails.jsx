@@ -188,7 +188,7 @@ export default function ResourceDetails() {
   if (error || !resource) return <div className="min-h-screen flex items-center justify-center text-red-500">{error || 'Resource not found'}</div>;
 
   const getActionWord = (type) => {
-    const t = (type || '').toUpperCase();
+    const t = (type || '').trim().toUpperCase();
     if (t === 'SELL') return 'BUY';
     if (t === 'DONATE' || t === 'FREE') return 'BORROW';
     if (t === 'BORROW') return 'LEND';
