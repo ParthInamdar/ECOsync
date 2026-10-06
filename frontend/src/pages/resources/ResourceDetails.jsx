@@ -225,7 +225,7 @@ export default function ResourceDetails() {
                   onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/800x600/e2e8f0/64748b?text=Error+Loading+Image"; }}
                 />
                 <div className="absolute top-4 left-4 bg-teal-500 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
-                  {resource.listing_type || resource.sharing_type.toUpperCase()}
+                  {resource.listing_type || (resource.sharing_type && resource.sharing_type.toUpperCase()) || 'AVAILABLE'}
                 </div>
               </div>
               {resource.images && resource.images.length > 0 && (
