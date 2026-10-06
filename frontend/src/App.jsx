@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -27,65 +27,74 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const Layout = () => {
+  const location = useLocation();
+  const isChatRoom = location.pathname.startsWith('/messages/');
+  
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          
+          <Route path="/add" element={
+            <ProtectedRoute>
+              <AddResource />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/requests" element={
+            <ProtectedRoute>
+              <MyRequests />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/impact" element={
+            <ProtectedRoute>
+              <MyImpact />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/messages" element={
+            <ProtectedRoute>
+              <Inbox />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/messages/:id" element={
+            <ProtectedRoute>
+              <ChatRoom />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/resource/:id" element={<ResourceDetails />} />
+          <Route path="/profile/:id" element={<PublicProfile />} />
+          
+          {/* Default redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+      {!isChatRoom && <Footer />}
+    </div>
+  );
+};
+
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="flex flex-col min-h-screen bg-gray-50">
-          <Navbar />
-          <div className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              
-              <Route path="/add" element={
-                <ProtectedRoute>
-                  <AddResource />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/requests" element={
-                <ProtectedRoute>
-                  <MyRequests />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/impact" element={
-                <ProtectedRoute>
-                  <MyImpact />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/admin" element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/messages" element={
-                <ProtectedRoute>
-                  <Inbox />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/messages/:id" element={
-                <ProtectedRoute>
-                  <ChatRoom />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/resource/:id" element={<ResourceDetails />} />
-              <Route path="/profile/:id" element={<PublicProfile />} />
-              
-              {/* Default redirect */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-          <Footer />
-        </div>
+        <Layout />
       </Router>
     </AuthProvider>
   );
