@@ -346,7 +346,7 @@ export default function ResourceDetails() {
                       if(!user) toast.error("Please login first!"); 
                       else setShowRequestModal(true);
                     }}
-                    disabled={resource.has_requested || actionLoading}
+                    disabled={resource.has_requested}
                     className={`w-full text-white rounded py-3 font-bold text-lg transition-colors shadow-sm ${resource.has_requested ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'}`}
                   >
                     {resource.has_requested ? 'Requested' : `Request to ${actionWord}`}
