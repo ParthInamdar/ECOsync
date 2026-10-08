@@ -3,7 +3,6 @@
 </div>
 
 # EcoSync 🌱
-🚀 **Live Demo:** [https://ec-osync.vercel.app/](https://ec-osync.vercel.app/)
 
 EcoSync is a modern, AI-powered community resource-sharing platform. It connects people locally to borrow, lend, rent, and donate underutilized items like books, tools, electronics, and sports equipment.
 
@@ -17,7 +16,7 @@ EcoSync is a modern, AI-powered community resource-sharing platform. It connects
 - **Frontend:** React, Tailwind CSS, Vite, React-Leaflet
 - **Backend:** Python, Flask, SQLAlchemy, JWT Authentication
 - **AI Integration:** Groq API (Llama3/Mixtral) for intelligent condition assessment and recommendations
-- **Database:** Neon PostgreSQL (production) & SQLite (development)
+- **Database:** SQLite (development)
 
 ---
 
