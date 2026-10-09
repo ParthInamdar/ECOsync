@@ -4,6 +4,7 @@ from app.models.user import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import datetime
+from datetime import timezone
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -90,7 +91,7 @@ def send_reset_code():
     # Generate 6-digit code
     code = f"{random.randint(100000, 999999)}"
     user.reset_code = code
-    user.reset_expiry = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+    user.reset_expiry = datetime.now(timezone.utc) + datetime.timedelta(minutes=15)
     db.session.commit()
     
     # Send email (ensure MAIL_USERNAME and MAIL_PASSWORD are in .env)
@@ -134,7 +135,7 @@ def reset_password():
     if not user.reset_code or not user.reset_expiry:
         return jsonify({"success": False, "message": "No reset request found for this email"}), 400
         
-    if datetime.datetime.utcnow() > user.reset_expiry:
+    if datetime.now(timezone.utc) > user.reset_expiry:
         user.reset_code = None
         user.reset_expiry = None
         db.session.commit()
@@ -154,7 +155,7 @@ def reset_password():
 @jwt_required()
 def get_current_user():
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    user = db.session.get(User, current_user_id)
     
     if not user:
         return jsonify({"success": False, "message": "User not found", "error_code": "USER_NOT_FOUND"}), 404

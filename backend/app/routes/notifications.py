@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify
 from app.extensions import db
 from app.models.notification import Notification
 from app.models.transaction import Transaction
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 notifications_bp = Blueprint('notifications', __name__)
@@ -52,7 +52,7 @@ from app.models.user import User
 @jwt_required()
 def trigger_reminders():
     current_user_id = int(get_jwt_identity())
-    user = User.query.get(current_user_id)
+    user = db.session.get(User, current_user_id)
     if not user or user.role != 'ADMIN':
         return jsonify({"success": False, "message": "Unauthorized"}), 403
         
@@ -64,7 +64,7 @@ def trigger_reminders():
     ).all()
     
     count = 0
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     for t in active_transactions:
         # Simplistic logic: if within 24h of return date or overdue
         delta = t.expected_return_date - now

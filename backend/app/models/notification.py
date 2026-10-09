@@ -1,5 +1,5 @@
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
@@ -13,7 +13,7 @@ class Notification(db.Model):
     
     related_entity_id = db.Column(db.Integer, nullable=True) # ID of related request, transaction, etc
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     
     def __repr__(self):
         return f'<Notification {self.type} for User {self.user_id}>'

@@ -1,5 +1,5 @@
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Transaction(db.Model):
     __tablename__ = 'transactions'
@@ -10,7 +10,7 @@ class Transaction(db.Model):
     lender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     borrower_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
-    start_date = db.Column(db.DateTime, default=datetime.utcnow)
+    start_date = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     expected_return_date = db.Column(db.DateTime, nullable=True)
     return_date = db.Column(db.DateTime, nullable=True)
     

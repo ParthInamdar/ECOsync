@@ -1,5 +1,5 @@
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Report(db.Model):
     __tablename__ = 'reports'
@@ -13,7 +13,7 @@ class Report(db.Model):
     description = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(50), default='PENDING') # PENDING, REVIEWED, RESOLVED, DISMISSED
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     
     # Relationships
     reporter = db.relationship('User', foreign_keys=[reporter_id], backref='reports_made')

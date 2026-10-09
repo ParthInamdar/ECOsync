@@ -7,7 +7,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 admin_bp = Blueprint('admin', __name__)
 
 def is_admin(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     return user and user.role == 'ADMIN'
 
 @admin_bp.route('/users', methods=['GET'])
@@ -39,7 +39,7 @@ def delete_user(user_id):
     if current_user_id == user_id:
         return jsonify({"success": False, "message": "Cannot delete yourself"}), 400
         
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
     
     # In a real app we'd handle cascading deletes or soft deletes carefully
     db.session.delete(user)
@@ -72,7 +72,7 @@ def delete_resource(resource_id):
     if not is_admin(current_user_id):
         return jsonify({"success": False, "message": "Unauthorized"}), 403
         
-    resource = Resource.query.get_or_404(resource_id)
+    resource = db.get_or_404(Resource, resource_id)
     db.session.delete(resource)
     db.session.commit()
     return jsonify({"success": True, "message": "Resource deleted"}), 200

@@ -1,5 +1,5 @@
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -14,7 +14,7 @@ class User(db.Model):
     phone = db.Column(db.String(20), nullable=True)
     address = db.Column(db.String(255), nullable=True)
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     
     # Password Reset
     reset_code = db.Column(db.String(6), nullable=True)

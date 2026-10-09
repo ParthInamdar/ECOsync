@@ -3,7 +3,7 @@ from app.extensions import db
 from app.models.transaction import Transaction
 from app.models.notification import Notification
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from datetime import datetime
+from datetime import datetime, timezone
 
 transactions_bp = Blueprint('transactions', __name__)
 
@@ -40,7 +40,7 @@ def get_transactions():
 def return_transaction(transaction_id):
     current_user_id = int(get_jwt_identity())
     
-    t = Transaction.query.get(transaction_id)
+    t = db.session.get(Transaction, transaction_id)
     if not t:
         return jsonify({"success": False, "message": "Transaction not found"}), 404
         
@@ -51,7 +51,7 @@ def return_transaction(transaction_id):
         return jsonify({"success": False, "message": "Transaction is not active"}), 400
         
     t.status = 'RETURNED'
-    t.actual_return_date = datetime.utcnow()
+    t.actual_return_date = datetime.now(timezone.utc)
     t.request.resource.is_available = True
     
     # Notify the other party

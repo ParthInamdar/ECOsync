@@ -90,7 +90,7 @@ def create_or_get_conversation():
     if not listing_id:
         return jsonify({"success": False, "message": "Listing ID required"}), 400
         
-    listing = Resource.query.get_or_404(listing_id)
+    listing = db.get_or_404(Resource, listing_id)
     owner_id = listing.owner_id
     
     if current_user_id == owner_id:
@@ -125,13 +125,13 @@ def create_or_get_conversation():
 @jwt_required()
 def get_messages(conversation_id):
     current_user_id = int(get_jwt_identity())
-    conv = Conversation.query.get_or_404(conversation_id)
+    conv = db.get_or_404(Conversation, conversation_id)
     
     if current_user_id not in [conv.participant1_id, conv.participant2_id]:
         return jsonify({"success": False, "message": "Unauthorized"}), 403
         
     other_user_id = conv.participant2_id if conv.participant1_id == current_user_id else conv.participant1_id
-    other_user = User.query.get(other_user_id)
+    other_user = db.session.get(User, other_user_id)
         
     # Limit to last 200 messages for performance
     messages = Message.query.filter_by(conversation_id=conversation_id).order_by(Message.created_at.desc()).limit(200).all()
@@ -173,7 +173,7 @@ def get_messages(conversation_id):
 @jwt_required()
 def send_message(conversation_id):
     current_user_id = int(get_jwt_identity())
-    conv = Conversation.query.get_or_404(conversation_id)
+    conv = db.get_or_404(Conversation, conversation_id)
     
     if current_user_id not in [conv.participant1_id, conv.participant2_id]:
         return jsonify({"success": False, "message": "Unauthorized"}), 403

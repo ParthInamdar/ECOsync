@@ -1,5 +1,5 @@
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class ActivityLog(db.Model):
     __tablename__ = 'activity_logs'
@@ -9,7 +9,7 @@ class ActivityLog(db.Model):
     action = db.Column(db.String(100), nullable=False) # e.g. "USER_LOGIN", "RESOURCE_CREATED"
     details = db.Column(db.Text, nullable=True) # JSON or text details
     ip_address = db.Column(db.String(50), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     
     # Relationships
     user = db.relationship('User', backref=db.backref('activities', lazy=True))

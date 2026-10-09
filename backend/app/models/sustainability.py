@@ -1,5 +1,5 @@
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class SustainabilityImpact(db.Model):
     __tablename__ = 'sustainability_impacts'
@@ -12,7 +12,7 @@ class SustainabilityImpact(db.Model):
     reused = db.Column(db.Boolean, default=True)
     estimated_waste_avoided = db.Column(db.Float, nullable=True) # e.g. in kg
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     
     def __repr__(self):
         return f'<SustainabilityImpact {self.id} for User {self.user_id}>'

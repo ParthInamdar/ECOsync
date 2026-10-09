@@ -5,7 +5,7 @@ from app.models.resource import Resource
 from app.models.transaction import Transaction
 from app.models.notification import Notification
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from datetime import datetime
+from datetime import datetime, timezone
 
 requests_bp = Blueprint('requests', __name__)
 
@@ -33,7 +33,7 @@ def create_request():
     if not resource_id:
         return jsonify({"success": False, "message": "Resource ID is required"}), 400
         
-    resource = Resource.query.get(resource_id)
+    resource = db.session.get(Resource, resource_id)
     if not resource:
         return jsonify({"success": False, "message": "Resource not found"}), 404
         
@@ -62,7 +62,7 @@ def create_request():
     db.session.flush() # To get new_request.id
     
     from app.models.user import User
-    requester = User.query.get(current_user_id)
+    requester = db.session.get(User, current_user_id)
     requester_name = requester.username if requester else "Someone"
 
     # Notify owner
@@ -189,7 +189,7 @@ def update_request_status(request_id):
     if new_status not in ['ACCEPTED', 'REJECTED', 'CANCELLED']:
         return jsonify({"success": False, "message": "Invalid status"}), 400
         
-    req = Request.query.get(request_id)
+    req = db.session.get(Request, request_id)
     if not req:
         return jsonify({"success": False, "message": "Request not found"}), 404
         
@@ -211,7 +211,7 @@ def update_request_status(request_id):
             request_id=req.id,
             lender_id=req.resource.owner_id,
             borrower_id=req.requester_id,
-            start_date=req.start_date or datetime.utcnow(),
+            start_date=req.start_date or datetime.now(timezone.utc),
             expected_return_date=req.end_date,
             status='ACTIVE'
         )

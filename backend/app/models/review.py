@@ -1,5 +1,5 @@
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import UniqueConstraint
 
 class Review(db.Model):
@@ -15,7 +15,7 @@ class Review(db.Model):
     rating = db.Column(db.Integer, nullable=False) # 1 to 5
     comment = db.Column(db.Text, nullable=True)
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     
     # Relationships
     transaction = db.relationship('Transaction', backref='reviews')

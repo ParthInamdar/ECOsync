@@ -14,7 +14,7 @@ users_bp = Blueprint('users', __name__)
 
 @users_bp.route('/<int:user_id>', methods=['GET'])
 def get_public_profile(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
     
     current_user_id = None
     try:
@@ -158,7 +158,7 @@ def toggle_save_resource(resource_id):
     current_user_id = int(get_jwt_identity())
     
     # Check if resource exists
-    resource = Resource.query.get_or_404(resource_id)
+    resource = db.get_or_404(Resource, resource_id)
     
     existing = SavedResource.query.filter_by(user_id=current_user_id, resource_id=resource_id).first()
     

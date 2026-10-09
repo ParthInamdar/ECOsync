@@ -1,5 +1,5 @@
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Conversation(db.Model):
     __tablename__ = 'conversations'
@@ -8,8 +8,8 @@ class Conversation(db.Model):
     listing_id = db.Column(db.Integer, db.ForeignKey('resources.id'), nullable=False)
     participant1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     participant2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     
     # Relationships
     messages = db.relationship('Message', backref='conversation', lazy=True, cascade='all, delete-orphan')

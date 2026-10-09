@@ -28,7 +28,7 @@ def create_review():
     except ValueError:
         return jsonify({"success": False, "message": "Rating must be an integer between 1 and 5"}), 400
 
-    transaction = Transaction.query.get(transaction_id)
+    transaction = db.session.get(Transaction, transaction_id)
     if not transaction:
         return jsonify({"success": False, "message": "Transaction not found"}), 404
         

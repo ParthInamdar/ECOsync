@@ -202,7 +202,7 @@ def get_resource_availability(resource_id):
 @jwt_required()
 def update_resource_status(resource_id):
     current_user_id = int(get_jwt_identity())
-    resource = Resource.query.get_or_404(resource_id)
+    resource = db.get_or_404(Resource, resource_id)
     
     if resource.owner_id != current_user_id:
         return jsonify({"success": False, "message": "Unauthorized"}), 403
