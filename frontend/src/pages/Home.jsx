@@ -94,7 +94,7 @@ export default function Home() {
       <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         
         {/* Hero Categories Slider */}
-        <div className="relative mb-10 group px-8">
+        <div className="relative mb-10 px-8">
           <button 
             onClick={scrollLeft} 
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-200 rounded-full p-2 transition-opacity focus:outline-none"
