@@ -134,7 +134,7 @@ export default function ResourceDetails() {
       return;
     }
     
-    const needsDates = (resource.listing_type === 'RENT' || resource.listing_type === 'BORROW' || resource.sharing_type === 'Borrow');
+    const needsDates = (actionWord === 'BORROW' || actionWord === 'RENT');
     if (needsDates && (!startDate || !endDate)) {
       setRequestError("Please select both start and end dates.");
       return;
