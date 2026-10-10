@@ -22,8 +22,8 @@ def seed_database():
 
         print("Seeding Categories...")
         categories = [
-            "Electronics", "Books", "Tools", "Home Appliances",
-            "Sports Equipment", "Clothing", "Toys", "Other"
+            "Electronics", "Books", "Tools", "Household",
+            "Sports Equipment", "Musical Instruments", "Outdoors & Camping", "Party Supplies", "Apparel", "Baby & Kids"
         ]
         cat_objects = {}
         for c_name in categories:

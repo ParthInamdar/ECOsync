@@ -23,7 +23,7 @@ with app.app_context():
     
     # Optionally seed some categories
     if not Category.query.first():
-        categories = ['Books', 'Electronics', 'Sports Equipment', 'Tools', 'Household', 'Other']
+        categories = ['Books', 'Electronics', 'Sports Equipment', 'Tools', 'Household', 'Musical Instruments', 'Outdoors & Camping', 'Party Supplies', 'Apparel', 'Baby & Kids']
         for cat_name in categories:
             cat = Category(name=cat_name)
             db.session.add(cat)
